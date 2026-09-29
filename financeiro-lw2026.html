@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="robots" content="noindex, nofollow">
+<title>Financeiro — Casamento Lais & Willian</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.0/dist/chart.umd.js" integrity="sha384-iU8HYtnGQ8Cy4zl7gbNMOhsDTTKX02BTXptVP/vqAWIaTfM7isw76iyZCsjL2eVi" crossorigin="anonymous"></script>
+<style>
+  :root { color-scheme: light; }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; padding: 24px;
+    font-family: -apple-system, 'Segoe UI', Arial, sans-serif;
+    background: #F5EEDF; color: #453E31;
+    max-width: 1100px; margin-left: auto; margin-right: auto;
+  }
+  h1 { font-size: 1.3rem; margin: 0 0 2px; }
+  h2.section-title { font-size: .95rem; margin: 30px 0 12px; color: #453E31; }
+  .sub { color: #6B6153; font-size: .85rem; margin-bottom: 20px; }
+
+  .cards { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+  @media (max-width: 900px) { .cards { grid-template-columns: repeat(2, 1fr); } }
+  .card-kpi { background: #fff; border-radius: 10px; padding: 14px 16px; border: 1px solid #e7ddc8; }
+  .card-kpi .label { font-size: .68rem; text-transform: uppercase; letter-spacing: .06em; color: #6B6153; }
+  .card-kpi .value { font-size: 1.35rem; font-weight: 700; margin-top: 4px; }
+  .card-kpi .extra { font-size: .74rem; color: #6B6153; margin-top: 2px; }
+
+  .progress-wrap { margin-top: 8px; }
+  .progress-bar { position: relative; height: 10px; border-radius: 6px; background: #e7ddc8; overflow: hidden; margin-top: 6px;}
+  .progress-fill { height: 100%; border-radius: 6px; background: #A98F6B; }
+  .progress-labels { display:flex; justify-content: space-between; font-size: .68rem; color:#6B6153; margin-top:3px;}
+
+  .charts-row { display: grid; grid-template-columns: 1fr 1.3fr; gap: 18px; margin-top: 8px; }
+  @media (max-width: 900px) { .charts-row { grid-template-columns: 1fr; } }
+  .chart-card { background: #fff; border-radius: 10px; padding: 16px; border: 1px solid #e7ddc8; }
+  .chart-card .chart-title { font-size: .8rem; font-weight: 600; margin-bottom: 10px; }
+  .chart-card .chart-note { font-size: .7rem; color: #6B6153; margin-top: 8px; }
+  .chart-holder { position: relative; height: 260px; }
+
+  .board { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; align-items: start; }
+  @media (max-width: 900px) { .board { grid-template-columns: 1fr; } }
+  .col { background: #ffffffaa; border-radius: 10px; padding: 12px; min-height: 60px; }
+  .col h2 { font-size: .78rem; text-transform: uppercase; letter-spacing: .08em; margin: 4px 6px 12px; color: #453E31; display: flex; justify-content: space-between; }
+  .col h2 .count { background: #453E31; color: #F5EEDF; border-radius: 10px; padding: 1px 8px; font-size: .72rem; }
+  .card { background: #fff; border: 1px solid #e7ddc8; border-left: 4px solid #A98F6B; border-radius: 8px; padding: 10px 12px; margin-bottom: 10px; }
+  .col.contratado .card { border-left-color: #4c7a4c; }
+  .col.negociacao .card { border-left-color: #c9922e; }
+  .col.acotar .card { border-left-color: #b5484f; }
+  .card .cat { font-size: .68rem; text-transform: uppercase; letter-spacing: .06em; color: #6B6153; }
+  .card .name { font-weight: 600; margin: 3px 0; font-size: .92rem; }
+  .card .meta { font-size: .8rem; color: #453E31; }
+  .card .flag { font-size: .76rem; color: #b5484f; margin-top: 6px; }
+  .legend { font-size: .75rem; color: #6B6153; margin-top: 20px; }
+
+  .pay-group { background: #fff; border: 1px solid #e7ddc8; border-radius: 10px; padding: 14px 16px; margin-bottom: 12px; }
+  .pay-group .pay-title { font-weight: 700; font-size: .88rem; display: flex; justify-content: space-between; }
+  .pay-group .pay-title .tot { font-weight: 400; color: #6B6153; font-size: .78rem; }
+  .pay-item { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-top: 1px solid #f0e9d8; }
+  .pay-item:first-of-type { border-top: none; margin-top: 6px; }
+  .pay-item input[type=checkbox] { width: 17px; height: 17px; accent-color: #4c7a4c; flex-shrink: 0; }
+  .pay-item .pi-label { flex: 1; font-size: .85rem; }
+  .pay-item .pi-label .pi-valor { color: #6B6153; font-size: .78rem; }
+  .pay-item input[type=text] { border: 1px solid #e7ddc8; border-radius: 6px; padding: 4px 8px; font-size: .76rem; width: 200px; color: #453E31; font-family: inherit; }
+  .pay-item.done .pi-label { text-decoration: line-through; color: #8f8570; }
+  .lock-note { font-size: .72rem; color: #6B6153; background: #fff; border: 1px solid #e7ddc8; border-radius: 8px; padding: 10px 14px; margin-bottom: 18px; }
+
+  #gate { position: fixed; inset: 0; background: #F5EEDF; display: flex; align-items: center; justify-content: center; z-index: 999; flex-direction: column; gap: 14px; }
+  #gate .box { background: #fff; border: 1px solid #e7ddc8; border-radius: 12px; padding: 28px 32px; width: 100%; max-width: 320px; text-align: center; }
+  #gate h2 { font-size: 1rem; margin: 0 0 4px; }
+  #gate p { font-size: .8rem; color: #6B6153; margin: 0 0 16px; }
+  #gate input { width: 100%; padding: 9px 12px; border: 1px solid #e7ddc8; border-radius: 8px; font-size: .9rem; text-align: center; box-sizing: border-box; }
+  #gate button { margin-top: 10px; width: 100%; padding: 9px; border: none; border-radius: 8px; background: #453E31; color: #F5EEDF; font-size: .85rem; cursor: pointer; }
+  #gate .err { color: #b5484f; font-size: .78rem; margin-top: 8px; min-height: 1em; }
+  #main-content { display: none; }
+</style>
+</head>
+<body>
+  <div id="gate">
+    <div class="box">
+      <h2>Painel do Casamento</h2>
+      <p>Acesso restrito — digite a senha combinada com o Willian.</p>
+      <input type="password" id="gate-pw" placeholder="Senha" autocomplete="off">
+      <button id="gate-btn">Entrar</button>
+      <div class="err" id="gate-err"></div>
+    </div>
+  </div>
+  <div id="main-content">
+  <h1>Painel do Casamento — Orçamento e Fornecedores</h1>
+  <div class="sub">Lais &amp; Willian · 12/12/2026 · Atualizado em 29/09/2026</div>
+  <div class="lock-note">Link privado — não aparece em buscas e não é público. Marcações de pagamento feitas aqui ficam salvas só neste navegador (não sincronizam automaticamente entre quem acessa o link).</div>
+
+  <div class="cards">
+    <div class="card-kpi">
+      <div class="label">Orçamento total</div>
+      <div class="value">R$ 100–140 mil</div>
+      <div class="extra">mínimo confortável / teto máximo</div>
+    </div>
+    <div class="card-kpi">
+      <div class="label">Comprometido até agora</div>
+      <div class="value" id="kpi-comprometido">—</div>
+      <div class="extra" id="kpi-comprometido-pct">—</div>
+    </div>
+    <div class="card-kpi">
+      <div class="label">Saldo restante</div>
+      <div class="value" id="kpi-saldo">—</div>
+      <div class="extra">entre o cenário mínimo e o teto de 140 mil</div>
+    </div>
+    <div class="card-kpi">
+      <div class="label">Progresso do projeto</div>
+      <div class="value" id="kpi-progresso">—</div>
+      <div class="extra">categorias fechadas ou não-aplicáveis / total</div>
+    </div>
+  </div>
+
+  <div class="progress-wrap card-kpi" style="margin-top:14px;">
+    <div class="label">Orçamento consumido (sobre o teto de R$140 mil)</div>
+    <div class="progress-bar"><div class="progress-fill" id="bar-budget" style="width:0%"></div></div>
+    <div class="progress-labels"><span>R$0</span><span id="bar-budget-label"></span><span>R$140.000</span></div>
+  </div>
+
+  <h2 class="section-title">Orçamento</h2>
+  <div class="charts-row">
+    <div class="chart-card">
+      <div class="chart-title">Share do orçamento consumido (de R$140 mil)</div>
+      <div class="chart-holder"><canvas id="chartShare"></canvas></div>
+      <div class="chart-note">Fatias coloridas = já contratado por categoria. Cinza = saldo ainda disponível.</div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-title">Saldo restante — orçamento-alvo sugerido por categoria pendente</div>
+      <div class="chart-holder"><canvas id="chartTarget"></canvas></div>
+      <div class="chart-note">Divide o saldo restante proporcionalmente ao peso de cada categoria ainda não contratada.</div>
+    </div>
+  </div>
+
+  <h2 class="section-title">Fornecedores por status</h2>
+  <div class="board">
+    <div class="col contratado"><h2>Contratado <span class="count" id="c-contratado">0</span></h2><div id="list-contratado"></div></div>
+    <div class="col negociacao"><h2>Em negociação / decidindo <span class="count" id="c-negociacao">0</span></h2><div id="list-negociacao"></div></div>
+    <div class="col acotar"><h2>Ainda sem cotação <span class="count" id="c-acotar">0</span></h2><div id="list-acotar"></div></div>
+  </div>
+
+  <div class="legend">Borda verde = contratado · amarela = em negociação · vermelha = falta cotar.</div>
+
+  <h2 class="section-title">Checklist de Pagamentos</h2>
+  <div class="sub" style="margin-bottom:14px;">Marque a caixinha quando o pagamento sair e ajuste a data se quiser.</div>
+  <div id="pay-board"></div>
+
+<script>
+const PAY_GROUPS = [
+  { title: 'Espaço — Araucária Village', total: 'R$ 30.000', items: [
+    { id: 'espaco-entrada', label: 'Entrada', valor: 'R$ 6.000', data: '12/08/2026', done: true },
+    { id: 'espaco-p1', label: '1ª parcela (dia 20)', valor: 'R$ 6.000', data: '20/08/2026', done: true },
+    { id: 'espaco-p2', label: '2ª parcela (dia 20)', valor: 'R$ 6.000', data: '20/09/2026 — já venceu, confirmar se foi paga', done: false },
+    { id: 'espaco-p3', label: '3ª parcela (dia 20)', valor: 'R$ 6.000', data: '20/10/2026', done: false },
+    { id: 'espaco-p4', label: '4ª parcela (dia 20)', valor: 'R$ 6.000', data: '20/11/2026', done: false },
+  ]},
+  { title: 'Buffet — Mara Eventos', total: 'R$ 35.000', items: [
+    { id: 'buffet-contrato', label: 'Assinatura do contrato', valor: '—', data: 'ainda não assinado — aguardando', done: false },
+    { id: 'buffet-sinal', label: 'Sinal (30%)', valor: 'R$ 10.500', data: 'só após assinatura do contrato', done: false },
+    { id: 'buffet-saldo', label: 'Saldo (70%)', valor: 'R$ 24.500', data: 'até 22/11/2026 (20 dias antes)', done: false },
+  ]},
+  { title: 'Bar e Coquetel', total: 'R$ 10.070', items: [
+    { id: 'bar-unico', label: 'Pagamento único', valor: 'R$ 10.070', data: 'pago 28/09/2026', done: true },
+  ]},
+  { title: 'Foto e Vídeo — Ale Cavaliere', total: 'R$ 9.000', items: [
+    { id: 'foto-p1', label: '1ª parcela (50%)', valor: 'R$ 4.500', data: 'pago 29/09/2026', done: true },
+    { id: 'foto-p2', label: '2ª parcela (50%)', valor: 'R$ 4.500', data: '10/12/2026', done: false },
+  ]},
+  { title: 'Banda — Deliziare', total: 'R$ 18.500', items: [
+    { id: 'banda-parcelas', label: 'Pagamento à vista', valor: 'R$ 18.500', data: 'pago integralmente — 100% quitado', done: true },
+  ]},
+];
+
+function payLoad(id, fallback) {
+  try { const v = localStorage.getItem('pagto_' + id); return v === null ? fallback : JSON.parse(v); }
+  catch (e) { return fallback; }
+}
+function paySave(id, val) {
+  try { localStorage.setItem('pagto_' + id, JSON.stringify(val)); } catch (e) {}
+}
+
+const payBoard = document.getElementById('pay-board');
+PAY_GROUPS.forEach(function(group) {
+  const groupEl = document.createElement('div');
+  groupEl.className = 'pay-group';
+  groupEl.innerHTML = `<div class="pay-title"><span>${group.title}</span><span class="tot">${group.total}</span></div>`;
+  group.items.forEach(function(item) {
+    const checked = payLoad(item.id + '_done', item.done);
+    const dataVal = payLoad(item.id + '_data', item.data);
+    const row = document.createElement('div');
+    row.className = 'pay-item' + (checked ? ' done' : '');
+    row.innerHTML = `
+      <input type="checkbox" ${checked ? 'checked' : ''}>
+      <div class="pi-label">${item.label} <span class="pi-valor">— ${item.valor}</span></div>
+      <input type="text" value="${dataVal}">
+    `;
+    const cb = row.querySelector('input[type=checkbox]');
+    const txt = row.querySelector('input[type=text]');
+    cb.addEventListener('change', function() {
+      paySave(item.id + '_done', cb.checked);
+      row.classList.toggle('done', cb.checked);
+    });
+    txt.addEventListener('change', function() {
+      paySave(item.id + '_data', txt.value);
+    });
+    groupEl.appendChild(row);
+  });
+  payBoard.appendChild(groupEl);
+});
+</script>
+
+<script>
+const BUDGET_MAX = 140000;
+const BUDGET_MIN = 100000;
+
+const committed = [
+  { cat: 'Espaço + Hospedagem', value: 30000, color: '#453E31' },
+  { cat: 'Bar (Bar e Coquetel, contrato assinado)', value: 10070, color: '#A98F6B' },
+  { cat: 'Foto e Vídeo (Ale Cavaliere, contrato assinado)', value: 9000, color: '#c9922e' },
+  { cat: 'Banda (Deliziare, contrato assinado — pago à vista)', value: 18500, color: '#6f8f6f' },
+];
+const totalCommitted = committed.reduce((s, c) => s + c.value, 0);
+const saldoMax = BUDGET_MAX - totalCommitted;
+
+const pending = [
+  { cat: 'Buffet (Mara Eventos — acordo verbal, contrato ainda não assinado)', weight: 35000 },
+  { cat: 'Decoração', weight: 17300 },
+  { cat: 'Mobiliário (lounges + cerimônia)', weight: 6000 },
+  { cat: 'Transporte de convidados (van hotéis ↔ evento)', weight: 3000 },
+  { cat: 'Maquiagem e Cabelo (noiva)', weight: 1500 },
+  { cat: 'Pista + Cobertura (mesma empresa)', weight: 7000 },
+  { cat: 'Gerador de Energia', weight: 2500 },
+  { cat: 'Doces / Bolo (mesa de doces finos — bolo já incluso no buffet)', weight: 2900 },
+  { cat: 'Papelaria', weight: 1500 },
+];
+const weightSum = pending.reduce((s, c) => s + c.weight, 0);
+pending.forEach(c => c.target = Math.round(saldoMax / weightSum * c.weight));
+
+document.getElementById('kpi-comprometido').textContent = 'R$ ' + totalCommitted.toLocaleString('pt-BR');
+document.getElementById('kpi-comprometido-pct').textContent =
+  Math.round(totalCommitted / BUDGET_MIN * 100) + '% do mínimo · ' + Math.round(totalCommitted / BUDGET_MAX * 100) + '% do teto';
+document.getElementById('kpi-saldo').textContent =
+  'R$ ' + (BUDGET_MIN - totalCommitted).toLocaleString('pt-BR') + ' – ' + saldoMax.toLocaleString('pt-BR');
+
+const totalCategorias = 14;
+const resolvidas = 5;
+document.getElementById('kpi-progresso').textContent = resolvidas + ' / ' + totalCategorias + ' (' + Math.round(resolvidas/totalCategorias*100) + '%)';
+
+const pct = Math.min(100, totalCommitted / BUDGET_MAX * 100);
+document.getElementById('bar-budget').style.width = pct + '%';
+document.getElementById('bar-budget-label').textContent = 'R$ ' + totalCommitted.toLocaleString('pt-BR') + ' (' + Math.round(pct) + '%)';
+
+new Chart(document.getElementById('chartShare'), {
+  type: 'doughnut',
+  data: {
+    labels: [...committed.map(c => c.cat), 'Saldo disponível (até 140 mil)'],
+    datasets: [{ data: [...committed.map(c => c.value), saldoMax], backgroundColor: [...committed.map(c => c.color), '#e7ddc8'], borderWidth: 0 }]
+  },
+  options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { font: { size: 10 }, boxWidth: 12 } } } }
+});
+
+new Chart(document.getElementById('chartTarget'), {
+  type: 'bar',
+  data: {
+    labels: pending.map(c => c.cat),
+    datasets: [{ label: 'Orçamento-alvo sugerido (R$)', data: pending.map(c => c.target), backgroundColor: '#A98F6B', borderRadius: 4 }]
+  },
+  options: { responsive: true, maintainAspectRatio: false, indexAxis: 'y', plugins: { legend: { display: false } }, scales: { x: { ticks: { callback: v => 'R$' + (v/1000) + 'k' } } } }
+});
+
+const items = [
+  { status: 'contratado', cat: 'Espaço', name: 'Araucária Village (espaço + hospedagem)', meta: 'R$ 30.000' },
+  { status: 'contratado', cat: 'Bar', name: 'Bar e Coquetel — Clube VIP (rótulos premium)', meta: 'R$ 10.070 · contrato assinado 25/09/2026, pago à vista via PIX em 28/09/2026', flag: 'Valor final ficou R$270 acima do estimado — rótulos saíram premium por negociação própria' },
+  { status: 'contratado', cat: 'Foto e Vídeo', name: 'Ale Cavaliere — Essencial', meta: 'R$ 9.000 · contrato assinado 28/09/2026', flag: '1ª parcela paga 29/09/2026. Falta a 2ª (R$4.500) em 10/12/2026.' },
+  { status: 'contratado', cat: 'Banda', name: 'Deliziare — cerimônia + banda de baile + DJ', meta: 'R$ 18.500 · contrato assinado 24/09/2026 · PAGO À VISTA, 100% quitado', flag: 'Falta só formalizar por e-mail o uso dos instrumentos pela segunda banda' },
+  { status: 'negociacao', cat: 'Buffet', name: 'Mara Eventos — Personalizado Rev2', meta: 'R$ 35.000 · cardápio aprovado, degustação já paga', flag: 'ACORDO VERBAL — CONTRATO AINDA NÃO ASSINADO' },
+  { status: 'negociacao', cat: 'Pizzada (pré-wedding, sexta 11/12)', name: 'Buffet Santa Pizza — 40 convidados', meta: 'R$ 2.100', flag: 'Provável fechamento — confirmar cardápio e bebidas' },
+  { status: 'negociacao', cat: 'Banda de Rock', name: 'Young Trip', meta: 'R$ 6.000 (alimentação inclusa)', flag: 'Falta confirmar duração do show e transporte' },
+  { status: 'acotar', cat: 'Decoração', name: 'Reunião de alinhamento 28/09/2026', meta: '4 propostas de R$14.700 a R$19.900' },
+  { status: 'acotar', cat: 'Hotéis para convidados', name: 'Parceria de desconto', meta: 'Faro Hotéis e Itapetinga Hotel — 5% de desconto' },
+  { status: 'acotar', cat: 'Mobiliário', name: 'Provável decisão: comprar em vez de alugar', meta: 'estimativa R$ 6.000' },
+  { status: 'acotar', cat: 'Transporte de convidados', name: 'Van hotéis ↔ evento', meta: 'estimativa R$ 3.000' },
+  { status: 'acotar', cat: 'Maquiagem e Cabelo', name: 'Nenhum profissional cotado ainda', meta: 'estimativa R$ 1.500' },
+  { status: 'acotar', cat: 'Estrutura', name: 'Pista de madeira + Cobertura', meta: 'estimativa R$ 7.000' },
+  { status: 'acotar', cat: 'Estrutura', name: 'Gerador de energia', meta: 'estimativa R$ 2.500' },
+  { status: 'acotar', cat: 'Doces / Bolo', name: 'Mesa de doces finos (Mara, 600un)', meta: 'R$ 2.900' },
+  { status: 'acotar', cat: 'Papelaria', name: 'Sinalização de mesa, cardápio impresso', meta: 'estimativa R$ 1.500' },
+];
+
+const listEl = { contratado: document.getElementById('list-contratado'), negociacao: document.getElementById('list-negociacao'), acotar: document.getElementById('list-acotar') };
+const countEl = { contratado: document.getElementById('c-contratado'), negociacao: document.getElementById('c-negociacao'), acotar: document.getElementById('c-acotar') };
+const counts = { contratado: 0, negociacao: 0, acotar: 0 };
+items.forEach(it => {
+  counts[it.status]++;
+  const card = document.createElement('div');
+  card.className = 'card';
+  card.innerHTML = `<div class="cat">${it.cat}</div><div class="name">${it.name}</div><div class="meta">${it.meta}</div>` + (it.flag ? `<div class="flag">⚠ ${it.flag}</div>` : '');
+  listEl[it.status].appendChild(card);
+});
+Object.keys(counts).forEach(k => countEl[k].textContent = counts[k]);
+</script>
+  </div>
+
+<script>
+// Camada de proteção extra: senha simples (comparação por hash SHA-256).
+// Não é uma segurança forte (é um arquivo estático), mas impede acesso casual
+// de quem não tem a senha, mesmo que descubra o link.
+const GATE_HASH = '85ab905d6e20e223ed9f1d084e0120ec319135f23dd73909cc0c2fe402142f39';
+async function sha256(text) {
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(text));
+  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
+}
+function unlock() {
+  document.getElementById('gate').style.display = 'none';
+  document.getElementById('main-content').style.display = 'block';
+}
+if (sessionStorage.getItem('fin_unlocked') === '1') {
+  unlock();
+} else {
+  const pwInput = document.getElementById('gate-pw');
+  const btn = document.getElementById('gate-btn');
+  const err = document.getElementById('gate-err');
+  async function tryUnlock() {
+    const h = await sha256(pwInput.value || '');
+    if (h === GATE_HASH) {
+      sessionStorage.setItem('fin_unlocked', '1');
+      unlock();
+    } else {
+      err.textContent = 'Senha incorreta.';
+      pwInput.value = '';
+      pwInput.focus();
+    }
+  }
+  btn.addEventListener('click', tryUnlock);
+  pwInput.addEventListener('keydown', function(e) { if (e.key === 'Enter') tryUnlock(); });
+  pwInput.focus();
+}
+</script>
+</body>
+</html>
