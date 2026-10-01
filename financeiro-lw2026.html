@@ -305,7 +305,7 @@ Object.keys(counts).forEach(k => countEl[k].textContent = counts[k]);
 // Camada de proteção extra: senha simples (comparação por hash SHA-256).
 // Não é uma segurança forte (é um arquivo estático), mas impede acesso casual
 // de quem não tem a senha, mesmo que descubra o link.
-const GATE_HASH = '85ab905d6e20e223ed9f1d084e0120ec319135f23dd73909cc0c2fe402142f39';
+const GATE_HASH = '276365f4d85d186983055c7eb6731d659b230cdaa81bcbf7316f73a4464e6b70';
 async function sha256(text) {
   const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(text));
   return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
