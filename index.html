@@ -44,14 +44,6 @@
   section{ padding:var(--sp-6) 0; }
   .amp{ color:var(--gold); font-weight:400; }
 
-  /* mockup badge */
-  .mockup-badge{
-    position:fixed; top:0; left:0; right:0; z-index:100;
-    background:var(--dark); color:var(--gold);
-    text-align:center; font-size:.66rem; letter-spacing:.18em;
-    text-transform:uppercase; padding:7px 10px;
-  }
-
   /* nav */
   nav{
     position:sticky; top:27px; z-index:50;
@@ -368,8 +360,6 @@
 </style>
 </head>
 <body>
-
-<div class="mockup-badge">Mockup — ainda não publicado</div>
 
 <nav>
   <div class="wrap">
@@ -1244,13 +1234,21 @@
     "Juliana Pereira", "Marcos Vinícius Costa", "Patrícia Almeida", "Rafael Nogueira"
   ];
 
+  // Normaliza cada resultado pra { label, value }: "label" é o texto mostrado
+  // na lista (pode incluir "— convidado por X" quando há nomes repetidos,
+  // vindo do Apps Script), "value" é o nome puro usado pra confirmar o RSVP.
+  function normalizeGuestResult(item){
+    if (typeof item === 'string') return { label: item, value: item };
+    return { label: item.label || item.value || '', value: item.value || item.label || '' };
+  }
+
   function searchGuests(query, callback){
     query = (query || '').trim();
     if(query.length < 2){ callback([]); return; }
     if(GUEST_SEARCH_ENDPOINT_URL){
       fetch(GUEST_SEARCH_ENDPOINT_URL + '?q=' + encodeURIComponent(query))
         .then(function(r){ return r.json(); })
-        .then(function(list){ callback(list || []); })
+        .then(function(list){ callback((list || []).map(normalizeGuestResult)); })
         .catch(function(){ callback([]); });
       return;
     }
@@ -1258,7 +1256,7 @@
     callback(DEMO_GUEST_LIST.filter(function(n){
       var nameWords = n.toLowerCase().split(/\s+/).filter(Boolean);
       return queryWords.every(function(qw){ return nameWords.some(function(nw){ return nw.indexOf(qw) === 0; }); });
-    }));
+    }).map(normalizeGuestResult));
   }
 
   // ---- campo "seu nome" (seleção obrigatória, não aceita texto livre) ----
@@ -1274,12 +1272,12 @@
     nomeHint.textContent = 'Selecione seu nome na lista para continuar.';
     nomeHint.classList.remove('ok');
     searchGuests(nomeBusca.value, function(results){
-      renderAcList(nomeList, results, function(name){
-        nomeBusca.value = name;
-        nomeHidden.value = name;
+      renderAcList(nomeList, results, function(picked){
+        nomeBusca.value = picked.value;
+        nomeHidden.value = picked.value;
         nomeList.classList.remove('show');
         rsvpForm.classList.add('name-confirmed');
-        nomeHint.textContent = 'Nome confirmado: ' + name;
+        nomeHint.textContent = 'Nome confirmado: ' + picked.label;
         nomeHint.classList.add('ok');
       });
     });
@@ -1293,10 +1291,10 @@
     if(results.length === 0){
       container.innerHTML = '<div class="ac-empty">Nenhum nome encontrado — verifique a grafia ou fale com a gente.</div>';
     } else {
-      results.forEach(function(name){
+      results.forEach(function(r){
         var item = document.createElement('div');
-        item.textContent = name;
-        item.addEventListener('click', function(){ onPick(name); });
+        item.textContent = r.label;
+        item.addEventListener('click', function(){ onPick(r); });
         container.appendChild(item);
       });
     }
