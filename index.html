@@ -152,7 +152,7 @@
     display:flex; gap:18px; align-items:baseline; padding:12px 0; border-bottom:1px solid var(--hair);
   }
   .sched-item:last-child{ border-bottom:none; }
-  .sched-time{ flex:0 0 auto; width:100px; text-align:right; font-size:.8rem; letter-spacing:.06em; color:var(--gold); font-weight:400; }
+  .sched-time{ flex:0 0 auto; width:148px; text-align:right; font-size:.78rem; letter-spacing:.02em; color:var(--gold); font-weight:400; font-style:italic; }
   .sched-title{ font-size:.95rem; color:var(--dark); }
   .sched-title .tag{
     display:inline-block; margin-left:8px; font-size:.6rem; letter-spacing:.08em; text-transform:uppercase;
@@ -302,6 +302,43 @@
   @media (max-width:820px){ .carousel-arrow{ display:none; } }
   .gift-payment-result{ display:none; margin-top:10px; text-align:center; }
   .gift-payment-result img{ width:110px; height:110px; border-radius:8px; border:1px solid var(--hair-strong); }
+
+  /* drawer de pagamento do presente */
+  .wa-btn{
+    display:inline-flex; align-items:center; gap:6px; margin-top:8px; padding:7px 16px; border-radius:999px;
+    border:1px solid var(--hair-strong); color:var(--dark); text-decoration:none !important; font-size:.64rem;
+    letter-spacing:.08em; text-transform:uppercase; transition:background var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease);
+  }
+  .wa-btn:hover{ background:var(--ink); color:var(--creme); border-color:var(--ink); }
+  .gift-drawer{ position:fixed; inset:0; z-index:9999; visibility:hidden; }
+  .gift-drawer.open{ visibility:visible; }
+  .gift-drawer-backdrop{
+    position:absolute; inset:0; background:rgba(46,40,32,.45); opacity:0;
+    transition:opacity var(--dur) var(--ease);
+  }
+  .gift-drawer.open .gift-drawer-backdrop{ opacity:1; }
+  .gift-drawer-panel{
+    position:absolute; top:0; right:0; height:100%; width:min(420px,92vw);
+    background:var(--creme); border-left:1px solid var(--hair-strong);
+    box-shadow:-20px 0 50px rgba(46,40,32,.18);
+    transform:translateX(100%); transition:transform var(--dur) var(--ease);
+    display:flex; flex-direction:column; padding:28px var(--sp-4); overflow-y:auto;
+  }
+  .gift-drawer.open .gift-drawer-panel{ transform:translateX(0); }
+  .gift-drawer-close{
+    align-self:flex-end; background:none; border:1px solid var(--hair-strong); border-radius:50%;
+    width:34px; height:34px; cursor:pointer; font-size:1rem; color:var(--gray); line-height:1; font-family:inherit;
+  }
+  .gift-drawer-close:hover{ background:var(--hair); }
+  .gift-drawer-title{ font-size:.62rem; letter-spacing:.18em; text-transform:uppercase; color:var(--gold); margin:var(--sp-3) 0 4px; text-align:center; }
+  .gift-drawer-item{ font-size:1.15rem; color:var(--dark); text-align:center; margin-bottom:var(--sp-3); }
+  .gift-drawer-body{ text-align:center; margin-top:var(--sp-2); }
+  .gift-drawer-body img{ width:210px; height:210px; border-radius:10px; border:1px solid var(--hair-strong); }
+  .gift-drawer-body .copia-cola{
+    width:100%; margin-top:var(--sp-3); background:var(--card); border:1px solid var(--hair-strong);
+    border-radius:8px; padding:10px; font-family:inherit; font-size:.76rem; resize:none;
+  }
+  .gift-drawer-body .ac-hint{ margin-top:10px; font-size:.78rem; color:var(--gray); }
   .gift-payment-result .copia-cola{
     display:block; width:100%; margin-top:8px; font-size:.62rem; color:var(--gray);
     background:var(--creme); border:1px solid var(--hair-strong); border-radius:8px; padding:6px;
@@ -342,7 +379,6 @@
         <li style="display:none"><a href="#trilha">Trilha Sonora</a></li>
         <li><a href="#chegar">Chegar &amp; Ficar</a></li>
         <li><a href="#presente">Presente</a></li>
-        <li><a href="#faq">Dúvidas</a></li>
       </ul>
     </div>
     <a href="#rsvp" class="nav-cta">Confirmar presença</a>
@@ -375,29 +411,28 @@
   <div class="details">
     <div class="detail-card">
       <div class="label">Horário</div>
-      <div class="value">Recepção às 16h30</div>
+      <div class="value">Recepção às 16h30<br>Cerimônia às 17h</div>
     </div>
     <div class="detail-card">
       <div class="label">Dress code</div>
-      <div class="value placeholder">Em breve</div>
+      <div class="value">Esporte fino — recomendamos calçados adequados para área externa.</div>
     </div>
     <div class="detail-card">
-      <div class="label">Bom saber</div>
-      <div class="value placeholder">Espaço ao ar livre — vá com calçado confortável</div>
+      <div class="label">Se chover</div>
+      <div class="value">Haverá área coberta no espaço, mas vale trazer um guarda-chuva pra garantir.</div>
     </div>
   </div>
 
   <div class="schedule">
-    <p class="schedule-note">Programação provisória, sujeita a alterações — os horários finais entram aqui assim que fecharmos com os fornecedores.</p>
+    <p class="schedule-note">Um roteiro pensado para fluir com calma — preferimos contar o clima de cada momento do que prometer horários exatos, que ainda podem mudar.</p>
 
-    <div class="schedule-day">
-      <div class="sched-item"><div class="sched-time">16h30</div><div class="sched-title">Recepção</div></div>
-      <div class="sched-item"><div class="sched-time">17h</div><div class="sched-title">Cerimônia</div></div>
-      <div class="sched-item"><div class="sched-time">17h30 – 18h30</div><div class="sched-title">Welcome drink</div></div>
-      <div class="sched-item"><div class="sched-time">18h30 – 22h</div><div class="sched-title">Banda Deliziare</div></div>
-      <div class="sched-item"><div class="sched-time">19h30</div><div class="sched-title">Jantar</div></div>
-      <div class="sched-item"><div class="sched-time">22h – 22h45</div><div class="sched-title">DJ</div></div>
-      <div class="sched-item"><div class="sched-time">23h – 00h</div><div class="sched-title">Banda surpresa</div></div>
+    <div class="schedule-day flow">
+      <div class="sched-item"><div class="sched-time">Começo de tarde</div><div class="sched-title">Chegada &amp; Recepção</div></div>
+      <div class="sched-item"><div class="sched-time">Ao entardecer</div><div class="sched-title">Cerimônia</div></div>
+      <div class="sched-item"><div class="sched-time">Em seguida</div><div class="sched-title">Welcome Drink</div></div>
+      <div class="sched-item"><div class="sched-time">Durante a noite</div><div class="sched-title">Jantar</div></div>
+      <div class="sched-item"><div class="sched-time">Pra dançar</div><div class="sched-title">Banda Deliziare</div></div>
+      <div class="sched-item"><div class="sched-time">Virada da noite</div><div class="sched-title">DJ &amp; Banda Surpresa</div></div>
     </div>
   </div>
 </section>
@@ -418,19 +453,31 @@
 
   <div class="info-panel fade-panel panel-in" data-info="hospedagem" data-display="block">
     <p class="section-lede" style="margin-bottom:var(--sp-3)">
-      Sugestões de hospedagem pra quem vier de fora. Nos dois hotéis abaixo, é só avisar que você é convidado(a) do casamento Lais &amp; Willian de 12/12 na hora de reservar por WhatsApp, telefone ou e-mail para ganhar 5% de desconto — o desconto não vale para reservas feitas por outros canais, como Booking.
+      Sugestões de hospedagem.
     </p>
-    <div class="details" style="max-width:640px;grid-template-columns:1fr 1fr">
-      <div class="detail-card">
-        <div class="label">Faro Hotéis</div>
-        <div class="value">
-          <a href="https://www.farohoteis.com.br/hoteis" target="_blank" rel="noopener">farohoteis.com.br</a>
-        </div>
-      </div>
+    <div class="details" style="max-width:900px;grid-template-columns:1fr 1fr 1fr">
       <div class="detail-card">
         <div class="label">Itapetinga Hotel</div>
         <div class="value">
-          <a href="https://www.itapetingahotel.com.br/" target="_blank" rel="noopener">itapetingahotel.com.br</a>
+          5% de desconto para convidados do casamento Lais &amp; Willian · 17 min do local<br>
+          <a href="https://www.itapetingahotel.com.br/" target="_blank" rel="noopener">itapetingahotel.com.br</a><br>
+          <a class="wa-btn" href="https://wa.me/5511977725759" target="_blank" rel="noopener">WhatsApp</a>
+        </div>
+      </div>
+      <div class="detail-card">
+        <div class="label">Faro Hotéis</div>
+        <div class="value">
+          10% de desconto com o cupom <strong>LAWILL</strong> direto no site · 15 min do local<br>
+          <a href="https://www.farohoteis.com.br/hoteis" target="_blank" rel="noopener">farohoteis.com.br</a><br>
+          <a class="wa-btn" href="https://wa.me/551144147410" target="_blank" rel="noopener">WhatsApp</a>
+        </div>
+      </div>
+      <div class="detail-card">
+        <div class="label">Bourbon Resort Atibaia</div>
+        <div class="value">
+          Sem desconto para convidados · 13 min do local<br>
+          <a href="https://www.bourbon.com.br/hoteis-e-resorts/bourbon-resort-atibaia" target="_blank" rel="noopener">bourbon.com.br</a><br>
+          <a class="wa-btn" href="https://wa.me/551135128787" target="_blank" rel="noopener">WhatsApp</a>
         </div>
       </div>
       <div class="detail-card" style="grid-column:1 / -1">
@@ -444,27 +491,28 @@
 
   <div class="info-panel fade-panel" data-info="beleza" data-display="block" style="display:none">
     <p class="section-lede" style="margin-bottom:var(--sp-3)">
-      Pra quem quiser chegar arrumado(a) ou fazer cabelo e maquiagem antes da festa, vão algumas indicações da região — não são parcerias, então vale confirmar disponibilidade e preço direto com cada salão.
+      Recomendações de salões na região:
     </p>
     <div class="details" style="max-width:640px;grid-template-columns:1fr 1fr">
       <div class="detail-card">
-        <div class="label">Em Atibaia (~30min do local)</div>
+        <div class="label">Bruno Baratella</div>
         <div class="value">
-          <strong>UP Beleza Integrativa</strong> — Av. Lucas Garcez. Pacotes de "Dia da Noiva", sala exclusiva pra noivas, cabelo e maquiagem.<br><br>
-          <strong>Espaço Ligia Menegati</strong> — penteados e maquiagem para eventos.
+          <a href="https://www.instagram.com/bbaratella/" target="_blank" rel="noopener">@bbaratella</a><br>
+          <a class="wa-btn" href="https://wa.me/5511945541146" target="_blank" rel="noopener">WhatsApp</a>
         </div>
       </div>
       <div class="detail-card">
-        <div class="label">Em Piracaia (mais perto do local)</div>
+        <div class="label">Alan Pedroso</div>
         <div class="value">
-          <strong>Marina Salão de Beleza</strong> — cabelo e beleza no centro de Piracaia.<br><br>
-          <strong>Tatha Felix</strong> — Jardim Primavera, Piracaia.
+          <a href="https://www.instagram.com/alanpedrosohair/" target="_blank" rel="noopener">@alanpedrosohair</a><br>
+          <a class="wa-btn" href="https://wa.me/5511997952482" target="_blank" rel="noopener">WhatsApp</a>
         </div>
       </div>
     </div>
   </div>
 
   <div class="info-panel fade-panel" data-info="transporte" data-display="block" style="display:none">
+    <p class="section-lede" style="margin-bottom:var(--sp-3);font-style:italic">Depois de celebrar, cuide bem do caminho de volta — se beber, não dirija.</p>
     <div class="details" style="max-width:520px;grid-template-columns:1fr 1fr">
       <div class="detail-card">
         <div class="label">Estacionamento</div>
@@ -473,10 +521,6 @@
       <div class="detail-card">
         <div class="label">Van de Cortesia</div>
         <div class="value placeholder">Levando e trazendo dos hotéis parceiros — horários confirmados em breve.</div>
-      </div>
-      <div class="detail-card" style="grid-column:1 / -1">
-        <div class="label">Voucher Uber</div>
-        <div class="value">Também teremos um voucher de Uber pra idas e vindas na região, com a Araucária Village como origem ou destino.</div>
       </div>
     </div>
     <div class="map-embed">
@@ -523,7 +567,7 @@
   <div class="section-head">
     <p class="eyebrow">Presença</p>
     <h2>Confirme sua Presença</h2>
-    <p class="section-lede">Confirmação obrigatória até <span class="deadline">13 de outubro de 2026</span>. Busque seu nome na lista de convidados para começar.</p>
+    <p class="section-lede">Confirmação obrigatória até <span class="deadline">31 de outubro de 2026</span>. Busque seu nome na lista de convidados para começar.</p>
   </div>
 
   <div class="rsvp-card">
@@ -993,27 +1037,15 @@
   </div>
 </section>
 
-<!-- FAQ -->
-<section id="faq" class="wrap">
-  <div class="section-head">
-    <p class="eyebrow">Dúvidas</p>
-    <h2>Perguntas Frequentes</h2>
+<div class="gift-drawer" id="gift-drawer">
+  <div class="gift-drawer-backdrop"></div>
+  <div class="gift-drawer-panel">
+    <button type="button" class="gift-drawer-close" aria-label="Fechar">&times;</button>
+    <p class="gift-drawer-title">Presente escolhido</p>
+    <p class="gift-drawer-item" id="gift-drawer-item"></p>
+    <div class="gift-drawer-body" id="gift-drawer-body"></div>
   </div>
-  <div class="faq-wrap">
-    <div class="faq-item">
-      <div class="q">Tem estacionamento no local?</div>
-      <div class="a">Sim, gratuito para os convidados.</div>
-    </div>
-    <div class="faq-item">
-      <div class="q">Posso levar crianças?</div>
-      <div class="a">Apenas se forem filhos das pessoas convidadas.</div>
-    </div>
-    <div class="faq-item">
-      <div class="q">E se chover?</div>
-      <div class="a">Haverá área coberta, mas leve seu guarda-chuva.</div>
-    </div>
-  </div>
-</section>
+</div>
 
 <footer>
   <div class="footer-row">
@@ -1046,18 +1078,29 @@
   // Fica sem efeito (mostra aviso "em preparação") enquanto isso não existir.
   var MP_CREATE_CHARGE_ENDPOINT_URL = "/api/create-charge";
 
+  // painel lateral (drawer) que abre com o QR code/copia-e-cola do presente escolhido
+  var giftDrawer = document.getElementById('gift-drawer');
+  var giftDrawerBody = document.getElementById('gift-drawer-body');
+  var giftDrawerItem = document.getElementById('gift-drawer-item');
+
+  function openGiftDrawer(){ giftDrawer.classList.add('open'); document.body.style.overflow = 'hidden'; }
+  function closeGiftDrawer(){ giftDrawer.classList.remove('open'); document.body.style.overflow = ''; }
+  giftDrawer.querySelector('.gift-drawer-backdrop').addEventListener('click', closeGiftDrawer);
+  giftDrawer.querySelector('.gift-drawer-close').addEventListener('click', closeGiftDrawer);
+  document.addEventListener('keydown', function(e){ if(e.key === 'Escape') closeGiftDrawer(); });
+
   document.querySelectorAll('.gift-card').forEach(function(row){
     var value = parseFloat(row.getAttribute('data-value'));
     var itemName = row.querySelector('.gift-name').textContent;
     var btn = row.querySelector('.gift-contribute-btn');
-    var resultBox = row.querySelector('.gift-payment-result');
 
     btn.addEventListener('click', function(){
-      resultBox.style.display = 'block';
-      resultBox.innerHTML = '<p class="ac-hint">Gerando cobrança...</p>';
+      giftDrawerItem.textContent = itemName;
+      giftDrawerBody.innerHTML = '<p class="ac-hint">Gerando cobrança...</p>';
+      openGiftDrawer();
 
       if(!MP_CREATE_CHARGE_ENDPOINT_URL){
-        resultBox.innerHTML = '<p class="ac-hint">Pagamento ainda em preparação — em breve o PIX é gerado na hora, aqui mesmo.</p>';
+        giftDrawerBody.innerHTML = '<p class="ac-hint">Pagamento ainda em preparação — em breve o PIX é gerado na hora, aqui mesmo.</p>';
         return;
       }
       btn.disabled = true;
@@ -1070,17 +1113,17 @@
         .then(function(data){
           btn.disabled = false;
           if(!data || data.error || !data.copiaECola){
-            resultBox.innerHTML = '<p class="ac-hint">Não conseguimos gerar o PIX agora — tenta de novo em instantes.</p>';
+            giftDrawerBody.innerHTML = '<p class="ac-hint">Não conseguimos gerar o PIX agora — tenta de novo em instantes.</p>';
             return;
           }
-          resultBox.innerHTML =
+          giftDrawerBody.innerHTML =
             (data.qrCodeBase64 ? '<img src="data:image/png;base64,' + data.qrCodeBase64 + '" alt="QR code do PIX">' : '') +
             '<textarea class="copia-cola" rows="3" readonly onclick="this.select()">' + data.copiaECola + '</textarea>' +
             '<p class="ac-hint">Escaneie o QR code ou copie o código acima no seu app do banco.</p>';
         })
         .catch(function(){
           btn.disabled = false;
-          resultBox.innerHTML = '<p class="ac-hint">Não conseguimos gerar o PIX agora — tenta de novo em instantes.</p>';
+          giftDrawerBody.innerHTML = '<p class="ac-hint">Não conseguimos gerar o PIX agora — tenta de novo em instantes.</p>';
         });
     });
   });
