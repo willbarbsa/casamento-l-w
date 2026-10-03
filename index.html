@@ -188,7 +188,10 @@
     max-width:520px; margin:var(--sp-5) auto 0; background:var(--card); border:1px solid var(--hair);
     border-radius:var(--radius); box-shadow:var(--shadow); padding:var(--sp-4);
   }
-  .deadline{ color:var(--dark); font-weight:400; }
+  .deadline{
+    display:inline-block; color:var(--dark); font-weight:500; font-family:'Poppins', sans-serif;
+    letter-spacing:.02em; padding:2px 12px; border-bottom:1.5px solid var(--gold);
+  }
   .field{ margin-bottom:var(--sp-3); position:relative; }
   .field label{ display:block; font-size:.64rem; letter-spacing:.15em; text-transform:uppercase; color:var(--gray); margin-bottom:8px; }
   .field input[type=text], .field input[type=email], .field input[type=tel], .field textarea{
@@ -475,7 +478,7 @@
       <div class="detail-card">
         <div class="label">Bourbon Resort Atibaia</div>
         <div class="value">
-          Sem desconto para convidados · 13 min do local<br>
+          13 min do local<br>
           <a href="https://www.bourbon.com.br/hoteis-e-resorts/bourbon-resort-atibaia" target="_blank" rel="noopener">bourbon.com.br</a><br>
           <a class="wa-btn" href="https://wa.me/551135128787" target="_blank" rel="noopener">WhatsApp</a>
         </div>
@@ -1251,8 +1254,11 @@
         .catch(function(){ callback([]); });
       return;
     }
-    var q = query.toLowerCase();
-    callback(DEMO_GUEST_LIST.filter(function(n){ return n.toLowerCase().indexOf(q) !== -1; }));
+    var queryWords = query.toLowerCase().split(/\s+/).filter(Boolean);
+    callback(DEMO_GUEST_LIST.filter(function(n){
+      var nameWords = n.toLowerCase().split(/\s+/).filter(Boolean);
+      return queryWords.every(function(qw){ return nameWords.some(function(nw){ return nw.indexOf(qw) === 0; }); });
+    }));
   }
 
   // ---- campo "seu nome" (seleção obrigatória, não aceita texto livre) ----
