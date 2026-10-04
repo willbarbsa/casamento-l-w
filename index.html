@@ -46,7 +46,7 @@
 
   /* nav */
   nav{
-    position:sticky; top:27px; z-index:50;
+    position:sticky; top:0; z-index:50;
     background:rgba(245,238,223,.92); backdrop-filter:blur(8px);
   }
   nav .wrap{ display:flex; align-items:center; justify-content:space-between; padding:16px 28px; gap:20px; flex-wrap:nowrap; }
@@ -79,7 +79,7 @@
   .section-lede{ text-align:center; max-width:520px; margin:var(--sp-3) auto 0; color:var(--gray); font-size:.92rem; }
 
   /* hero */
-  .hero{ padding-top:180px; padding-bottom:var(--sp-6); text-align:center; }
+  .hero{ padding-top:40px; padding-bottom:var(--sp-6); text-align:center; }
   .hero-tree{ width:56px; height:84px; margin:0 auto var(--sp-3); }
   .hero h1{ font-size:clamp(1.9rem, 5.4vw, 2.9rem); letter-spacing:.09em; text-transform:uppercase; font-weight:300; }
   .hero .date{ margin-top:var(--sp-3); font-size:.85rem; letter-spacing:.22em; text-transform:uppercase; color:var(--gray); }
@@ -135,6 +135,8 @@
 
   /* cronograma do fim de semana */
   .schedule{ max-width:640px; margin:var(--sp-5) auto 0; }
+  .schedule-text{ text-align:center; color:var(--gray); font-size:.95rem; line-height:1.9; }
+  .schedule-text p + p{ margin-top:var(--sp-3); }
   .schedule-note{ text-align:center; color:var(--gray); font-size:.8rem; font-style:italic; margin-bottom:var(--sp-3); }
   .schedule-day{
     background:var(--card); border:1px solid var(--hair); border-radius:var(--radius);
@@ -299,6 +301,9 @@
   .gift-payment-result img{ width:110px; height:110px; border-radius:8px; border:1px solid var(--hair-strong); }
 
   /* drawer de pagamento do presente */
+  .stars{ display:flex; justify-content:center; gap:3px; margin:-2px 0 10px; color:var(--gold); }
+  .stars svg{ width:13px; height:13px; }
+  .detail-card .label a{ text-decoration:none; }
   .wa-btn{
     display:inline-flex; align-items:center; gap:6px; margin-top:8px; padding:7px 16px; border-radius:999px;
     border:1px solid var(--hair-strong); color:var(--dark); text-decoration:none !important; font-size:.64rem;
@@ -360,6 +365,7 @@
 </style>
 </head>
 <body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><symbol id="star" viewBox="0 0 24 24"><path d="M12 2l2.9 6.9 7.5.6-5.7 4.9 1.8 7.3L12 17.8 5.5 21.7l1.8-7.3L1.6 9.5l7.5-.6z" fill="currentColor"/></symbol></svg>
 
 <nav>
   <div class="wrap">
@@ -383,7 +389,6 @@
   <svg class="tree hero-tree" viewBox="-30 -14 60 90" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><line x1="0" y1="66" x2="0" y2="13" stroke-width="2"/><path d="M0,13 Q-14,9 -25,5"/><path d="M0,13 Q14,9 25,5"/><path d="M0,12 Q-10,7 -17,-1"/><path d="M0,12 Q10,7 17,-1"/><path d="M0,11 Q-6,4 -10,-7"/><path d="M0,11 Q6,4 10,-7"/><path d="M0,10 Q-3,2 -5,-10"/><path d="M0,10 Q3,2 5,-10"/><line x1="0" y1="10" x2="0" y2="-13"/><g fill="currentColor" stroke="none"><circle cx="-25" cy="5" r="2.4"/><circle cx="25" cy="5" r="2.4"/><circle cx="-17" cy="-1" r="2.3"/><circle cx="17" cy="-1" r="2.3"/><circle cx="-10" cy="-7" r="2.1"/><circle cx="10" cy="-7" r="2.1"/><circle cx="-5" cy="-10" r="1.9"/><circle cx="5" cy="-10" r="1.9"/><circle cx="0" cy="-13" r="2"/></g></svg>
   <h1>Lais <span class="amp">&amp;</span> Willian</h1>
   <div class="date">12 de dezembro de 2026</div>
-  <div class="place">Araucária Village · Piracaia, SP</div>
 
   <div class="countdown" id="countdown">
     <div class="box"><div class="n" id="cd-dias">–</div><div class="l">dias</div></div>
@@ -408,24 +413,19 @@
     </div>
     <div class="detail-card">
       <div class="label">Dress code</div>
-      <div class="value">Esporte fino — recomendamos calçados adequados para área externa.</div>
+      <div class="value">Esporte fino, com calçado confortável.</div>
     </div>
     <div class="detail-card">
-      <div class="label">Se chover</div>
-      <div class="value">Haverá área coberta no espaço, mas vale trazer um guarda-chuva pra garantir.</div>
+      <div class="label">Local</div>
+      <div class="value">Araucária Village<br>Piracaia, SP</div>
     </div>
   </div>
 
   <div class="schedule">
-    <p class="schedule-note">Um roteiro pensado para fluir com calma — preferimos contar o clima de cada momento do que prometer horários exatos, que ainda podem mudar.</p>
-
-    <div class="schedule-day flow">
-      <div class="sched-item"><div class="sched-time">Começo de tarde</div><div class="sched-title">Chegada &amp; Recepção</div></div>
-      <div class="sched-item"><div class="sched-time">Ao entardecer</div><div class="sched-title">Cerimônia</div></div>
-      <div class="sched-item"><div class="sched-time">Em seguida</div><div class="sched-title">Welcome Drink</div></div>
-      <div class="sched-item"><div class="sched-time">Durante a noite</div><div class="sched-title">Jantar</div></div>
-      <div class="sched-item"><div class="sched-time">Pra dançar</div><div class="sched-title">Banda Deliziare</div></div>
-      <div class="sched-item"><div class="sched-time">Virada da noite</div><div class="sched-title">DJ &amp; Banda Surpresa</div></div>
+    <div class="schedule-text">
+      <p>Vamos receber vocês com calma, entre abraços e um welcome drink, para que o reencontro aconteça sem pressa.</p>
+      <p>Depois, a cerimônia: um momento simples e nosso, cercado de quem mais amamos, seguido de um jantar à mesa, boa conversa e muitos brindes.</p>
+      <p>Quando a música chegar, com a Banda Deliziare e um DJ, a pista fica por conta de vocês — e talvez com algumas surpresas pelo caminho.</p>
     </div>
   </div>
 </section>
@@ -450,33 +450,33 @@
     </p>
     <div class="details" style="max-width:900px;grid-template-columns:1fr 1fr 1fr">
       <div class="detail-card">
-        <div class="label">Itapetinga Hotel</div>
+        <div class="label"><a href="https://www.itapetingahotel.com.br/" target="_blank" rel="noopener">Itapetinga Hotel</a></div>
+        <div class="stars" role="img" aria-label="3 estrelas"><svg><use href="#star"/></svg><svg><use href="#star"/></svg><svg><use href="#star"/></svg></div>
         <div class="value">
-          5% de desconto para convidados do casamento Lais &amp; Willian · 17 min do local<br>
-          <a href="https://www.itapetingahotel.com.br/" target="_blank" rel="noopener">itapetingahotel.com.br</a><br>
+          5% para convidados · 17 min<br>
           <a class="wa-btn" href="https://wa.me/5511977725759" target="_blank" rel="noopener">WhatsApp</a>
         </div>
       </div>
       <div class="detail-card">
-        <div class="label">Faro Hotéis</div>
+        <div class="label"><a href="https://www.farohoteis.com.br/hoteis" target="_blank" rel="noopener">Faro Hotéis</a></div>
+        <div class="stars" role="img" aria-label="4 estrelas"><svg><use href="#star"/></svg><svg><use href="#star"/></svg><svg><use href="#star"/></svg><svg><use href="#star"/></svg></div>
         <div class="value">
-          10% de desconto com o cupom <strong>LAWILL</strong> direto no site · 15 min do local<br>
-          <a href="https://www.farohoteis.com.br/hoteis" target="_blank" rel="noopener">farohoteis.com.br</a><br>
+          10% com cupom <strong>LAWILL</strong> · 15 min<br>
           <a class="wa-btn" href="https://wa.me/551144147410" target="_blank" rel="noopener">WhatsApp</a>
         </div>
       </div>
       <div class="detail-card">
-        <div class="label">Bourbon Resort Atibaia</div>
+        <div class="label"><a href="https://www.bourbon.com.br/hoteis-e-resorts/bourbon-resort-atibaia" target="_blank" rel="noopener">Bourbon Atibaia</a></div>
+        <div class="stars" role="img" aria-label="5 estrelas"><svg><use href="#star"/></svg><svg><use href="#star"/></svg><svg><use href="#star"/></svg><svg><use href="#star"/></svg><svg><use href="#star"/></svg></div>
         <div class="value">
-          13 min do local<br>
-          <a href="https://www.bourbon.com.br/hoteis-e-resorts/bourbon-resort-atibaia" target="_blank" rel="noopener">bourbon.com.br</a><br>
+          13 min<br>
           <a class="wa-btn" href="https://wa.me/551135128787" target="_blank" rel="noopener">WhatsApp</a>
         </div>
       </div>
       <div class="detail-card" style="grid-column:1 / -1">
         <div class="label">Airbnb</div>
         <div class="value">
-          Prefere um Airbnb? <a href="https://www.airbnb.com.br/s/Atibaia--SP/homes?place_id=ChIJfQDxRh_BzpQRN44Hv9Gihcg&refinement_paths%5B%5D=%2Fhomes&location_bb=wbieQsI6A5%2FBuVnJwjp02Q%3D%3D&acp_id=b14be924-c908-4776-a857-e2dd13bf6f99&date_picker_type=calendar&checkin=2026-12-12&checkout=2026-12-13&adults=3&search_type=autocomplete_click" target="_blank" rel="noopener">veja opções em Atibaia já filtradas pra 12–13/12</a>.
+          Prefere Airbnb? <a href="https://www.airbnb.com.br/s/Atibaia--SP/homes?place_id=ChIJfQDxRh_BzpQRN44Hv9Gihcg&refinement_paths%5B%5D=%2Fhomes&location_bb=wbieQsI6A5%2FBuVnJwjp02Q%3D%3D&acp_id=b14be924-c908-4776-a857-e2dd13bf6f99&date_picker_type=calendar&checkin=2026-12-12&checkout=2026-12-13&adults=3&search_type=autocomplete_click" target="_blank" rel="noopener">Veja opções em Atibaia</a>.
         </div>
       </div>
     </div>
@@ -513,7 +513,7 @@
       </div>
       <div class="detail-card">
         <div class="label">Van de Cortesia</div>
-        <div class="value placeholder">Levando e trazendo dos hotéis parceiros — horários confirmados em breve.</div>
+        <div class="value placeholder">Saídas exclusivamente dos hotéis Itapetinga e Faro, indo e voltando da festa. Horários em breve.</div>
       </div>
     </div>
     <div class="map-embed">
@@ -622,7 +622,7 @@
   <div class="section-head">
     <p class="eyebrow">Carinho</p>
     <h2>Presente</h2>
-    <p class="section-lede">Sua presença já é um presente, mas caso queira nos presentear, preparamos algumas sugestões abaixo. Prefira não trazer presente físico.</p>
+    <p class="section-lede">Sua presença já é o maior carinho. Se quiser nos mimar também, deixamos algumas sugestões abaixo — e, por favor, nada de embrulhos na festa.</p>
   </div>
 
   <div class="tab-bar" id="gift-tabs">
