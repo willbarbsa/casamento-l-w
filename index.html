@@ -135,10 +135,10 @@
 
   /* cronograma do fim de semana */
   .schedule{ max-width:640px; margin:var(--sp-3) auto 0; }
-  .schedule-text{ text-align:center; color:var(--gray); font-size:.95rem; line-height:1.9; }
-  .sched-intro{ color:var(--dark); font-size:1rem; margin-bottom:var(--sp-2); }
-  .sched-list{ list-style:none; margin:0 0 var(--sp-2); padding:0; }
-  .sched-list li{ padding:4px 0; }
+  .schedule-text{ text-align:center; color:var(--gray); font-size:.95rem; line-height:1.45; }
+  .sched-intro{ color:var(--dark); font-size:1rem; margin-bottom:var(--sp-1); }
+  .sched-list{ list-style:none; margin:0 0 var(--sp-1); padding:0; }
+  .sched-list li{ padding:2px 0; }
   .sched-outro{ font-style:italic; font-size:.9rem; }
   .schedule-note{ text-align:center; color:var(--gray); font-size:.8rem; font-style:italic; margin-bottom:var(--sp-3); }
   .schedule-day{
@@ -277,16 +277,16 @@
   .gift-card{
     scroll-snap-align:start; width:152px; flex:0 0 auto;
     background:var(--card); border:1px solid var(--hair); border-radius:12px;
-    padding:16px 12px; text-align:center;
+    padding:16px 12px; text-align:center; display:flex; flex-direction:column;
     transition:transform var(--dur) var(--ease), box-shadow var(--dur) var(--ease);
   }
   .gift-card:hover{ transform:translateY(-3px); box-shadow:0 16px 32px rgba(46,40,32,.12); }
   .gift-card .gift-icon{ width:30px; height:30px; margin:0 auto 10px; color:var(--gold); }
   .gift-card .gift-icon svg{ width:100%; height:100%; }
-  .gift-card .gift-name{ font-size:.76rem; line-height:1.3; color:var(--dark); min-height:2.6em; }
-  .gift-card .gift-value{ font-size:.7rem; color:var(--gray); margin-top:6px; }
+  .gift-card .gift-name{ font-size:.76rem; line-height:1.3; color:var(--dark); min-height:3.9em; }
+  .gift-card .gift-value{ font-size:.7rem; color:var(--gray); margin-top:6px; margin-bottom:10px; }
   .gift-card .gift-contribute-btn{
-    margin-top:10px; width:100%; background:none; border:1px solid var(--ink); border-radius:999px; color:var(--ink);
+    margin-top:auto; width:100%; background:none; border:1px solid var(--ink); border-radius:999px; color:var(--ink);
     padding:7px 10px; font-family:inherit; text-transform:uppercase; letter-spacing:.08em; font-size:.56rem;
     cursor:pointer; transition:background var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease);
   }
@@ -386,10 +386,32 @@
     .tab-bar{ flex-wrap:nowrap; overflow-x:auto; justify-content:flex-start; gap:6px; margin-left:-18px; margin-right:-18px; padding:0 18px 4px; scrollbar-width:none; }
     .tab-bar::-webkit-scrollbar{ display:none; }
     .tab-bar .tab{ flex:0 0 auto; padding:8px 14px; font-size:.62rem; white-space:nowrap; }
+    #chegar-tabs{ display:grid; grid-template-columns:1fr 1fr; overflow:visible; margin-left:0; margin-right:0; padding:0; gap:8px; }
+    #chegar-tabs .tab{ width:100%; text-align:center; white-space:normal; padding:10px 8px; }
     .rsvp-card{ padding:var(--sp-3) 18px; margin-top:var(--sp-3); }
-    .map-embed iframe{ height:240px; }
+    .map-embed iframe{ height:170px; }
     .sched-list li{ font-size:.92rem; }
   }
+
+  /* confirmação de presença (modal) */
+  .confirm-overlay{ position:fixed; inset:0; z-index:10000; display:flex; align-items:center; justify-content:center; padding:20px;
+    background:rgba(46,40,32,.5); opacity:0; visibility:hidden; transition:opacity var(--dur) var(--ease), visibility var(--dur); }
+  .confirm-overlay.open{ opacity:1; visibility:visible; }
+  .confirm-card{ background:var(--creme); border:1px solid var(--hair-strong); border-radius:var(--radius); box-shadow:var(--shadow);
+    max-width:400px; width:100%; padding:36px 28px 32px; text-align:center; transform:translateY(12px); transition:transform var(--dur) var(--ease); }
+  .confirm-overlay.open .confirm-card{ transform:translateY(0); }
+  .confirm-check{ width:56px; height:56px; margin:0 auto 18px; border-radius:50%; border:1.5px solid var(--gold); color:var(--gold); display:flex; align-items:center; justify-content:center; }
+  .confirm-check svg{ width:28px; height:28px; }
+  .confirm-card h3{ font-size:1.15rem; letter-spacing:.12em; text-transform:uppercase; font-weight:400; margin-bottom:12px; }
+  .confirm-card p{ color:var(--gray); font-size:.92rem; }
+  /* formulário do presente (dentro do drawer) */
+  .gift-form{ text-align:left; }
+  .gift-form label{ display:block; font-size:.62rem; letter-spacing:.16em; text-transform:uppercase; color:var(--gold); margin:var(--sp-2) 0 6px; }
+  .gift-form input, .gift-form textarea{ width:100%; background:var(--card); border:1px solid var(--hair-strong); border-radius:10px; padding:11px 12px; font-family:inherit; font-size:.9rem; color:var(--dark); }
+  .gift-form textarea{ min-height:96px; resize:vertical; }
+  .gift-form .btn{ width:100%; margin-top:var(--sp-3); cursor:pointer; text-align:center; }
+  .gift-form .gift-form-err{ color:#8a3b2e; font-size:.8rem; margin-top:8px; display:none; }
+  .gift-from{ font-size:.82rem; color:var(--gray); margin-bottom:var(--sp-2); }
 </style>
 </head>
 <body>
@@ -441,7 +463,7 @@
     </div>
     <div class="detail-card">
       <div class="label">Dress code</div>
-      <div class="value">Esporte fino<br>Com calçado confortável</div>
+      <div class="value">Esporte fino,<br>com calçado confortável</div>
     </div>
     <div class="detail-card">
       <div class="label">Local</div>
@@ -547,11 +569,11 @@
       </div>
       <div class="detail-card">
         <div class="label">Van de Cortesia</div>
-        <div class="value">Saídas exclusivamente dos hotéis Itapetinga e Faro, indo e voltando da festa.</div>
+        <div class="value">Ida e volta para os hotéis indicados.</div>
       </div>
     </div>
     <div class="map-embed">
-      <iframe src="https://maps.google.com/maps?q=Estr.+Mun.+Teizo+Murata,+Bairro+Canedos,+Piracaia,+SP&t=&z=14&output=embed" width="100%" height="320" style="border:0" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+      <iframe src="https://maps.google.com/maps?q=Estr.+Mun.+Teizo+Murata,+Bairro+Canedos,+Piracaia,+SP&t=&z=14&output=embed" width="100%" height="190" style="border:0" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
     </div>
     <p class="section-lede" style="margin-top:var(--sp-2)">
       Araucária Village — <a href="https://www.google.com/maps/search/?api=1&query=Estr.+Mun.+Teizo+Murata,+Bairro+Canedos,+Piracaia,+SP" target="_blank" rel="noopener" style="text-decoration:underline">Estr. Mun. Teizo Murata, s/n, Bairro Canedos, Piracaia/SP</a>
@@ -559,11 +581,11 @@
   </div>
 
   <div class="info-panel fade-panel" data-info="tempo" data-display="block" style="display:none">
-    <p class="weather-note">Previsão real, atualizada automaticamente — só fica precisa a partir de umas duas semanas antes do evento.</p>
+    <p class="weather-note">Em breve — a previsão aparece aqui automaticamente assim que for divulgada, cerca de duas semanas antes do casamento.</p>
     <div class="weather-grid" id="weather-grid">
-      <div class="weather-card" data-date="2026-12-11"><div class="weather-day">Sex · 11/12</div><div class="weather-status">—</div></div>
-      <div class="weather-card" data-date="2026-12-12"><div class="weather-day">Sáb · 12/12</div><div class="weather-status">—</div></div>
-      <div class="weather-card" data-date="2026-12-13"><div class="weather-day">Dom · 13/12</div><div class="weather-status">—</div></div>
+      <div class="weather-card" data-date="2026-12-11"><div class="weather-day">Sex · 11/12</div><div class="weather-status">Em breve</div></div>
+      <div class="weather-card" data-date="2026-12-12"><div class="weather-day">Sáb · 12/12</div><div class="weather-status">Em breve</div></div>
+      <div class="weather-card" data-date="2026-12-13"><div class="weather-day">Dom · 13/12</div><div class="weather-status">Em breve</div></div>
     </div>
   </div>
 </section>
@@ -586,68 +608,6 @@
       height="352" frameborder="0" allowfullscreen=""
       allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy">
     </iframe>
-  </div>
-</section>
-
-<!-- RSVP -->
-<section id="rsvp" class="wrap">
-  <div class="section-head">
-    <p class="eyebrow">Presença</p>
-    <h2>Confirme sua Presença</h2>
-    <p class="section-lede">Confirmação obrigatória até <span class="deadline">31 de outubro de 2026</span>. Busque seu nome na lista de convidados para começar.</p>
-  </div>
-
-  <div class="rsvp-card">
-    <form class="rsvp" id="rsvp-form">
-      <div class="field autocomplete-field">
-        <label for="nome-busca">Seu nome</label>
-        <input type="text" id="nome-busca" autocomplete="off" placeholder="Comece a digitar seu nome...">
-        <div class="ac-list" id="nome-ac-list"></div>
-        <input type="hidden" id="nome" name="nome" required>
-        <p class="ac-hint" id="nome-hint">Selecione seu nome na lista para continuar.</p>
-      </div>
-
-      <div class="field locked-until-name">
-        <label for="email">E-mail</label>
-        <input type="email" id="email" name="email" placeholder="voce@email.com">
-      </div>
-
-      <div class="field locked-until-name">
-        <label for="whatsapp">WhatsApp</label>
-        <input type="tel" id="whatsapp" name="whatsapp" placeholder="(11) 90000-0000">
-      </div>
-
-      <div class="field locked-until-name">
-        <label>Vai comparecer?</label>
-        <div class="pill-group" id="presenca-group">
-          <label class="pill" data-value="Sim"><input type="radio" name="presenca" value="Sim">Sim</label>
-          <label class="pill" data-value="Não"><input type="radio" name="presenca" value="Não">Não</label>
-        </div>
-      </div>
-
-      <div class="field locked-until-name">
-        <label for="acomp-nome">Acompanhantes (se houver)</label>
-        <div class="acomp-add">
-          <input type="text" id="acomp-nome" placeholder="Nome do acompanhante">
-          <select id="acomp-relacao">
-            <option value="conjuge">Cônjuge</option>
-            <option value="filho">Filho(a)</option>
-          </select>
-          <select id="acomp-faixa">
-            <option value="ate6">Até 6 anos</option>
-            <option value="7a12">7 a 12 anos</option>
-            <option value="13mais">13 anos ou mais</option>
-          </select>
-          <button type="button" id="acomp-add-btn" class="acomp-add-btn">Adicionar</button>
-        </div>
-        <div id="acomp-list"></div>
-        <input type="hidden" id="acompanhantes" name="acompanhantes">
-        <p class="ac-hint">Para filhos, marque a faixa etária.</p>
-      </div>
-
-      <button type="submit" class="submit-btn locked-until-name">Enviar confirmação</button>
-      <p class="form-msg" id="form-msg"></p>
-    </form>
   </div>
 </section>
 
@@ -1064,6 +1024,78 @@
   </div>
 </section>
 
+<!-- RSVP -->
+<section id="rsvp" class="wrap">
+  <div class="section-head">
+    <p class="eyebrow">Presença</p>
+    <h2>Confirme sua Presença</h2>
+    <p class="section-lede">Confirmação obrigatória até <span class="deadline">31 de outubro de 2026</span>. Busque seu nome na lista de convidados para começar.</p>
+  </div>
+
+  <div class="rsvp-card">
+    <form class="rsvp" id="rsvp-form">
+      <div class="field autocomplete-field">
+        <label for="nome-busca">Seu nome</label>
+        <input type="text" id="nome-busca" autocomplete="off" placeholder="Comece a digitar seu nome...">
+        <div class="ac-list" id="nome-ac-list"></div>
+        <input type="hidden" id="nome" name="nome" required>
+        <p class="ac-hint" id="nome-hint">Selecione seu nome na lista para continuar.</p>
+      </div>
+
+      <div class="field locked-until-name">
+        <label for="email">E-mail</label>
+        <input type="email" id="email" name="email" placeholder="voce@email.com">
+      </div>
+
+      <div class="field locked-until-name">
+        <label for="whatsapp">WhatsApp</label>
+        <input type="tel" id="whatsapp" name="whatsapp" placeholder="(11) 90000-0000">
+      </div>
+
+      <div class="field locked-until-name">
+        <label>Vai comparecer?</label>
+        <div class="pill-group" id="presenca-group">
+          <label class="pill" data-value="Sim"><input type="radio" name="presenca" value="Sim">Sim</label>
+          <label class="pill" data-value="Não"><input type="radio" name="presenca" value="Não">Não</label>
+        </div>
+      </div>
+
+      <div class="field locked-until-name">
+        <label for="acomp-nome">Acompanhantes (se houver)</label>
+        <div class="acomp-add">
+          <input type="text" id="acomp-nome" placeholder="Nome do acompanhante">
+          <select id="acomp-relacao">
+            <option value="conjuge">Cônjuge</option>
+            <option value="filho">Filho(a)</option>
+            <option value="outro">Outro(a)</option>
+          </select>
+          <select id="acomp-faixa">
+            <option value="ate6">Até 6 anos</option>
+            <option value="7a12">7 a 12 anos</option>
+            <option value="13mais">13 anos ou mais</option>
+          </select>
+          <button type="button" id="acomp-add-btn" class="acomp-add-btn">Adicionar</button>
+        </div>
+        <div id="acomp-list"></div>
+        <input type="hidden" id="acompanhantes" name="acompanhantes">
+        <p class="ac-hint">Para filhos, marque a faixa etária.</p>
+      </div>
+
+      <button type="submit" class="submit-btn locked-until-name">Enviar confirmação</button>
+      <p class="form-msg" id="form-msg"></p>
+    </form>
+  </div>
+</section>
+
+<div class="confirm-overlay" id="rsvp-confirm" role="dialog" aria-modal="true" aria-labelledby="rsvp-confirm-title">
+  <div class="confirm-card">
+    <div class="confirm-check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></div>
+    <h3 id="rsvp-confirm-title">Presença confirmada</h3>
+    <p id="rsvp-confirm-text"></p>
+    <button type="button" class="btn solid" id="rsvp-confirm-close">Fechar</button>
+  </div>
+</div>
+
 <div class="gift-drawer" id="gift-drawer">
   <div class="gift-drawer-backdrop"></div>
   <div class="gift-drawer-panel">
@@ -1116,43 +1148,63 @@
   giftDrawer.querySelector('.gift-drawer-close').addEventListener('click', closeGiftDrawer);
   document.addEventListener('keydown', function(e){ if(e.key === 'Escape') closeGiftDrawer(); });
 
+  function escHtml(s){ return String(s).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+
+  function showGiftForm(itemName, value){
+    giftDrawerItem.textContent = itemName;
+    giftDrawerBody.innerHTML =
+      '<form class="gift-form" id="gift-form" novalidate>' +
+        '<label for="gift-nome">Seu nome</label>' +
+        '<input type="text" id="gift-nome" maxlength="80" autocomplete="name">' +
+        '<label for="gift-msg">Mensagem</label>' +
+        '<textarea id="gift-msg" maxlength="300"></textarea>' +
+        '<p class="gift-form-err" id="gift-err">Informe seu nome para continuar.</p>' +
+        '<button type="submit" class="btn solid">Gerar PIX</button>' +
+      '</form>';
+    var form = document.getElementById('gift-form');
+    form.addEventListener('submit', function(e){
+      e.preventDefault();
+      var nome = document.getElementById('gift-nome').value.trim();
+      var mensagem = document.getElementById('gift-msg').value.trim();
+      if(!nome){ document.getElementById('gift-err').style.display = 'block'; return; }
+      generateGiftPix(itemName, value, nome, mensagem);
+    });
+    openGiftDrawer();
+    setTimeout(function(){ document.getElementById('gift-nome').focus(); }, 350);
+  }
+
+  function generateGiftPix(itemName, value, nome, mensagem){
+    giftDrawerBody.innerHTML = '<p class="ac-hint">Gerando cobrança...</p>';
+    if(!MP_CREATE_CHARGE_ENDPOINT_URL){
+      giftDrawerBody.innerHTML = '<p class="ac-hint">Pagamento ainda em preparação — em breve o PIX é gerado na hora, aqui mesmo.</p>';
+      return;
+    }
+    fetch(MP_CREATE_CHARGE_ENDPOINT_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ item: itemName, valor: value, nome: nome, mensagem: mensagem })
+    })
+      .then(function(r){ return r.json(); })
+      .then(function(data){
+        if(!data || data.error || !data.copiaECola){
+          giftDrawerBody.innerHTML = '<p class="ac-hint">Não conseguimos gerar o PIX agora — tenta de novo em instantes.</p>';
+          return;
+        }
+        giftDrawerBody.innerHTML =
+          '<p class="gift-from">De: ' + escHtml(nome) + '</p>' +
+          (data.qrCodeBase64 ? '<img src="data:image/png;base64,' + data.qrCodeBase64 + '" alt="QR code do PIX">' : '') +
+          '<textarea class="copia-cola" rows="3" readonly onclick="this.select()">' + escHtml(data.copiaECola) + '</textarea>' +
+          '<p class="ac-hint">Escaneie o QR code ou copie o código acima no seu app do banco.</p>';
+      })
+      .catch(function(){
+        giftDrawerBody.innerHTML = '<p class="ac-hint">Não conseguimos gerar o PIX agora — tenta de novo em instantes.</p>';
+      });
+  }
+
   document.querySelectorAll('.gift-card').forEach(function(row){
     var value = parseFloat(row.getAttribute('data-value'));
     var itemName = row.querySelector('.gift-name').textContent;
-    var btn = row.querySelector('.gift-contribute-btn');
-
-    btn.addEventListener('click', function(){
-      giftDrawerItem.textContent = itemName;
-      giftDrawerBody.innerHTML = '<p class="ac-hint">Gerando cobrança...</p>';
-      openGiftDrawer();
-
-      if(!MP_CREATE_CHARGE_ENDPOINT_URL){
-        giftDrawerBody.innerHTML = '<p class="ac-hint">Pagamento ainda em preparação — em breve o PIX é gerado na hora, aqui mesmo.</p>';
-        return;
-      }
-      btn.disabled = true;
-      fetch(MP_CREATE_CHARGE_ENDPOINT_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ item: itemName, valor: value })
-      })
-        .then(function(r){ return r.json(); })
-        .then(function(data){
-          btn.disabled = false;
-          if(!data || data.error || !data.copiaECola){
-            giftDrawerBody.innerHTML = '<p class="ac-hint">Não conseguimos gerar o PIX agora — tenta de novo em instantes.</p>';
-            return;
-          }
-          giftDrawerBody.innerHTML =
-            (data.qrCodeBase64 ? '<img src="data:image/png;base64,' + data.qrCodeBase64 + '" alt="QR code do PIX">' : '') +
-            '<textarea class="copia-cola" rows="3" readonly onclick="this.select()">' + data.copiaECola + '</textarea>' +
-            '<p class="ac-hint">Escaneie o QR code ou copie o código acima no seu app do banco.</p>';
-        })
-        .catch(function(){
-          btn.disabled = false;
-          giftDrawerBody.innerHTML = '<p class="ac-hint">Não conseguimos gerar o PIX agora — tenta de novo em instantes.</p>';
-        });
-    });
+    row.querySelector('.gift-contribute-btn').addEventListener('click', function(){ showGiftForm(itemName, value); });
   });
 
   // setas de navegação do carrossel de presentes
@@ -1230,7 +1282,7 @@
         if(!card) return;
         var dayLabel = card.querySelector('.weather-day').textContent;
         if(idx === -1 || data.daily.temperature_2m_max[idx] === null || data.daily.temperature_2m_max[idx] === undefined){
-          card.querySelector('.weather-status').textContent = 'Ainda não disponível';
+          card.querySelector('.weather-status').textContent = 'Em breve';
           return;
         }
         var code = data.daily.weathercode[idx];
@@ -1377,6 +1429,7 @@
 
   function acompLabel(person){
     if(person.relacao === 'conjuge') return 'Cônjuge';
+    if(person.relacao === 'outro') return 'Outro(a)';
     var faixaLabel = {};
     ACOMP_FAIXAS.forEach(function(f){ faixaLabel[f.v] = f.label; });
     return 'Filho(a) — ' + (faixaLabel[person.faixa] || '');
@@ -1417,6 +1470,28 @@
     updateAcompHidden();
   }
 
+  // ===== Confirmação visível após enviar o RSVP =====
+  var rsvpConfirm = document.getElementById('rsvp-confirm');
+  function closeRsvpConfirm(){ rsvpConfirm.classList.remove('open'); document.body.style.overflow = ''; }
+  function showRsvpConfirm(nome, presenca){
+    var primeiro = (nome || '').split(' ')[0];
+    var title = document.getElementById('rsvp-confirm-title');
+    var text = document.getElementById('rsvp-confirm-text');
+    if(presenca === 'Sim'){
+      title.textContent = 'Presença confirmada';
+      text.textContent = 'Obrigado, ' + primeiro + '! Recebemos sua confirmação e mal podemos esperar para celebrar com você.';
+    } else {
+      title.textContent = 'Resposta recebida';
+      text.textContent = 'Obrigado por avisar, ' + primeiro + '. Vamos sentir sua falta!';
+    }
+    rsvpConfirm.classList.add('open');
+    document.body.style.overflow = 'hidden';
+    document.getElementById('rsvp-confirm-close').focus();
+  }
+  document.getElementById('rsvp-confirm-close').addEventListener('click', closeRsvpConfirm);
+  rsvpConfirm.addEventListener('click', function(e){ if(e.target === rsvpConfirm) closeRsvpConfirm(); });
+  document.addEventListener('keydown', function(e){ if(e.key === 'Escape') closeRsvpConfirm(); });
+
   // ===== RSVP submit =====
   // Quando o Google Apps Script estiver publicado, cole a URL do Web App aqui:
   var RSVP_ENDPOINT_URL = "https://script.google.com/macros/s/AKfycbxYGP59u4iA2Lbjm6SNwUETKlG48CZiWMWsbYpXktwP8Blpo7oFVSXH8f2PZRxm0kyL/exec";
@@ -1435,10 +1510,17 @@
       return;
     }
     var data = new FormData(e.target);
+    var presenca = data.get('presenca');
+    if(!presenca){
+      msg.textContent = "Escolha se você vai comparecer (Sim ou Não).";
+      msg.style.display = 'block';
+      return;
+    }
+    var nomeConfirmado = nomeHidden.value;
+    msg.style.display = 'none';
     fetch(RSVP_ENDPOINT_URL, { method:'POST', body: data, mode:'no-cors' })
       .then(function(){
-        msg.textContent = "Presença confirmada, obrigado.";
-        msg.style.display = 'block';
+        showRsvpConfirm(nomeConfirmado, presenca);
         e.target.reset();
         rsvpForm.classList.remove('name-confirmed');
         acompSelected = [];
