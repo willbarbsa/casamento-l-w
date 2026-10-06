@@ -43,6 +43,8 @@ module.exports = async function handler(req, res) {
           segredo: appsScriptSecret,
           item: payment.external_reference,
           valor: payment.transaction_amount,
+          nome: payment.metadata && payment.metadata.nome,
+          mensagem: payment.metadata && payment.metadata.mensagem,
           paymentId: payment.id
         })
       });
