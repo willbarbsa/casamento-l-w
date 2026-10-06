@@ -32,9 +32,17 @@ module.exports = async function handler(req, res) {
 
   var body = req.body || {};
   var item = (body.item || 'Presente').toString().slice(0, 120);
+  // Identificação de quem presenteia + mensagem opcional (texto simples, tamanho limitado).
+  var nome = (body.nome || '').toString().replace(/[\r\n]+/g, ' ').trim().slice(0, 80);
+  var mensagem = (body.mensagem || '').toString().trim().slice(0, 300);
   var valor = parseFloat(body.valor);
   if (!valor || valor <= 0 || VALORES_PERMITIDOS.indexOf(valor) === -1) {
     res.status(400).json({ error: 'valor inválido — não corresponde a nenhum item do catálogo' });
+    return;
+  }
+
+  if (!nome) {
+    res.status(400).json({ error: 'informe o nome de quem está presenteando' });
     return;
   }
 
@@ -48,7 +56,8 @@ module.exports = async function handler(req, res) {
       },
       body: JSON.stringify({
         transaction_amount: valor,
-        description: 'Presente de casamento — ' + item,
+        description: 'Presente de casamento — ' + item + ' (de ' + nome + ')',
+        metadata: { nome: nome, mensagem: mensagem },
         payment_method_id: 'pix',
         external_reference: item,
         // Mercado Pago exige um e-mail de pagador — não coletamos isso no
