@@ -1159,7 +1159,7 @@
         '<label for="gift-msg">Mensagem</label>' +
         '<textarea id="gift-msg" maxlength="300"></textarea>' +
         '<p class="gift-form-err" id="gift-err">Informe seu nome para continuar.</p>' +
-        '<button type="submit" class="btn solid">Gerar PIX</button>' +
+        '<button type="submit" class="btn solid">Prosseguir</button>' +
       '</form>';
     var form = document.getElementById('gift-form');
     form.addEventListener('submit', function(e){
@@ -1479,7 +1479,7 @@
     var text = document.getElementById('rsvp-confirm-text');
     if(presenca === 'Sim'){
       title.textContent = 'Presença confirmada';
-      text.textContent = 'Obrigado, ' + primeiro + '! Recebemos sua confirmação e mal podemos esperar para celebrar com você.';
+      text.textContent = 'Obrigado, ' + primeiro + '. Sua presença foi confirmada. Te esperamos lá.';
     } else {
       title.textContent = 'Resposta recebida';
       text.textContent = 'Obrigado por avisar, ' + primeiro + '. Vamos sentir sua falta!';
