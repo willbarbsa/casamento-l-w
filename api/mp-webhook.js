@@ -22,7 +22,10 @@ module.exports = async function handler(req, res) {
   var appsScriptSecret = process.env.APPS_SCRIPT_SECRET;
 
   try {
-    var paymentId = req.body && req.body.data && req.body.data.id;
+    var paymentId = (req.body && req.body.data && req.body.data.id) ||
+      (req.query && (req.query['data.id'] || req.query.id));
+    console.log('[mp-webhook] recebido', JSON.stringify({ tipo: req.body && (req.body.type || req.body.action), paymentId: paymentId || null,
+      temToken: !!accessToken, temAppsScriptUrl: !!appsScriptUrl, temSegredo: !!appsScriptSecret }));
     if (!paymentId) {
       // Mercado Pago também manda notificações de outros tipos — ignoramos.
       res.status(200).end();
@@ -33,9 +36,13 @@ module.exports = async function handler(req, res) {
       headers: { 'Authorization': 'Bearer ' + accessToken }
     });
     var payment = await mpResp.json();
+    console.log('[mp-webhook] pagamento', JSON.stringify({ http: mpResp.status, status: payment.status, valor: payment.transaction_amount }));
 
+    if (payment.status === 'approved' && !appsScriptUrl) {
+      console.log('[mp-webhook] ERRO: APPS_SCRIPT_URL não configurada na Vercel');
+    }
     if (payment.status === 'approved' && appsScriptUrl) {
-      await fetch(appsScriptUrl, {
+      var asResp = await fetch(appsScriptUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -48,10 +55,13 @@ module.exports = async function handler(req, res) {
           paymentId: payment.id
         })
       });
+      var asTxt = await asResp.text();
+      console.log('[mp-webhook] apps script', asResp.status, asTxt.slice(0, 200));
     }
 
     res.status(200).end();
   } catch (err) {
+    console.log('[mp-webhook] ERRO', err && err.message);
     // Sempre responde 200 pro Mercado Pago não ficar retentando indefinidamente.
     res.status(200).end();
   }
