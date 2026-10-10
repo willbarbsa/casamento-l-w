@@ -335,9 +335,9 @@
   .gift-drawer-close:hover{ background:var(--hair); }
   .gift-drawer-title{ font-size:.62rem; letter-spacing:.18em; text-transform:uppercase; color:var(--gold); margin:var(--sp-3) 0 4px; text-align:center; }
   .gift-drawer-price{ display:block; margin-top:4px; font-size:.9rem; color:var(--gray); letter-spacing:.04em; }
-  .gift-drawer-thumb{ width:84px; height:84px; margin:0 auto 12px; border:1px solid var(--hair-strong); border-radius:16px; background:var(--card); color:var(--gold); padding:20px; overflow:hidden; }
-  .gift-drawer-thumb svg{ width:100%; height:100%; display:block; }
-  .gift-drawer-thumb img{ width:100%; height:100%; object-fit:cover; display:block; }
+  .gift-drawer-thumb{ display:block; box-sizing:border-box; width:64px; height:64px; margin:0 auto 12px; border:1px solid var(--hair-strong); border-radius:14px; background:var(--card); color:var(--gold); padding:15px; overflow:hidden; }
+  .gift-drawer-thumb svg{ display:block; width:100%; height:100%; }
+  .gift-drawer-thumb img{ display:block; width:100%; height:100%; object-fit:cover; }
   .gift-drawer-thumb.photo{ padding:0; }
   .gift-drawer-item{ font-size:1.15rem; color:var(--dark); text-align:center; margin-bottom:var(--sp-3); }
   .gift-drawer-body{ text-align:center; margin-top:var(--sp-2); }
@@ -1378,26 +1378,51 @@
     return { label: item.label || item.value || '', value: item.value || item.label || '' };
   }
 
-  // Só aparece quem tem a PALAVRA INTEIRA digitada (sem acento/maiúscula):
-  // "ana" encontra "Ana Beatriz", mas não "Juliana", "Jordana" nem "Ananda".
+  // Regras da busca (sem acento/maiúscula; basta o primeiro nome):
+  // 1) se alguém tem a palavra digitada INTEIRA, só essas pessoas aparecem ("ana" -> Ana Beatriz, nunca "Jordana");
+  // 2) se ninguém tem a palavra inteira, aparecem as que COMEÇAM com ela ("nel" -> Nelson).
   function semAcentoJS(t){ return String(t || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase(); }
-  function nomeExato(nomeCompleto, query){
+  function filtrarNomes(nomes, query){
     var q = semAcentoJS(query).split(/\s+/).filter(Boolean);
-    var n = semAcentoJS(nomeCompleto).split(/\s+/).filter(Boolean);
-    return q.length > 0 && q.every(function(w){ return n.indexOf(w) !== -1; });
+    if(!q.length) return [];
+    var exatos = [], inicio = [];
+    nomes.forEach(function(nome){
+      var n = semAcentoJS(nome).split(/\s+/).filter(Boolean);
+      if(q.every(function(w){ return n.indexOf(w) !== -1; })) exatos.push(nome);
+      else if(q.every(function(w){ return n.some(function(x){ return x.indexOf(w) === 0; }); })) inicio.push(nome);
+    });
+    return (exatos.length ? exatos : inicio).slice(0, 10);
   }
 
+  // A lista de nomes é baixada uma vez em segundo plano; depois disso a busca é instantânea.
+  var guestNames = null;
+  function preloadGuestNames(){
+    if(!GUEST_SEARCH_ENDPOINT_URL || guestNames) return;
+    fetch(GUEST_SEARCH_ENDPOINT_URL + '?all=1')
+      .then(function(r){ return r.json(); })
+      .then(function(list){
+        if(Array.isArray(list) && list.length > 1){
+          guestNames = list.map(function(i){ return typeof i === 'string' ? i : (i.value || i.label || ''); }).filter(Boolean);
+        }
+      })
+      .catch(function(){});
+  }
+  preloadGuestNames();
+
+  var searchSeq = 0;
   function searchGuests(query, callback){
     query = (query || '').trim();
     if(query.length < 2){ callback([]); return; }
+    if(guestNames){ callback(filtrarNomes(guestNames, query).map(normalizeGuestResult)); return; }
     if(GUEST_SEARCH_ENDPOINT_URL){
+      var seq = ++searchSeq;
       fetch(GUEST_SEARCH_ENDPOINT_URL + '?q=' + encodeURIComponent(query))
         .then(function(r){ return r.json(); })
-        .then(function(list){ callback((list || []).map(normalizeGuestResult).filter(function(g){ return nomeExato(g.value, query); })); })
-        .catch(function(){ callback([]); });
+        .then(function(list){ if(seq === searchSeq) callback(filtrarNomes((list || []).map(function(i){ return normalizeGuestResult(i).value; }), query).map(normalizeGuestResult)); })
+        .catch(function(){ if(seq === searchSeq) callback([]); });
       return;
     }
-    callback(DEMO_GUEST_LIST.filter(function(n){ return nomeExato(n, query); }).map(normalizeGuestResult));
+    callback(filtrarNomes(DEMO_GUEST_LIST, query).map(normalizeGuestResult));
   }
 
   // ---- campo "seu nome" (seleção obrigatória, não aceita texto livre) ----
@@ -1430,7 +1455,7 @@
   function renderAcList(container, results, onPick){
     container.innerHTML = '';
     if(results.length === 0){
-      container.innerHTML = '<div class="ac-empty">Nenhum nome encontrado — digite o nome completo, como no convite, ou fale com a gente.</div>';
+      container.innerHTML = '<div class="ac-empty">Nenhum nome encontrado — verifique a grafia ou fale com a gente.</div>';
     } else {
       results.forEach(function(r){
         var item = document.createElement('div');
