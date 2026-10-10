@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>Gestão · Lais & Willian</title>
+<style>
+:root{--bg:#f6f2ea;--ink:#2d2820;--mut:#7a705f;--card:#fff;--line:#e4dccb;--dk:#453E31;--ok:#4f7a4a;--warn:#b9822a;--bad:#a8402f;--blue:#46657a}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.45 -apple-system,Segoe UI,Roboto,sans-serif}
+header{background:var(--dk);color:#f6f2ea;padding:14px 18px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+header h1{margin:0;font-size:17px;font-weight:600}
+header small{opacity:.75}
+header button{background:transparent;border:1px solid #f6f2ea66;color:#f6f2ea;border-radius:8px;padding:6px 12px;cursor:pointer}
+main{max-width:1100px;margin:0 auto;padding:16px}
+#login{max-width:340px;margin:12vh auto;background:var(--card);padding:26px;border-radius:14px;border:1px solid var(--line);text-align:center}
+#login input{width:100%;padding:11px;border:1px solid var(--line);border-radius:8px;font-size:16px;margin:14px 0 10px}
+#login button{width:100%;padding:11px;background:var(--dk);color:#fff;border:0;border-radius:8px;font-size:15px;cursor:pointer}
+#err{color:var(--bad);min-height:20px;font-size:13px}
+nav{display:flex;gap:6px;overflow-x:auto;margin-bottom:14px}
+nav button{background:var(--card);border:1px solid var(--line);border-radius:999px;padding:7px 14px;cursor:pointer;white-space:nowrap;color:var(--ink)}
+nav button.on{background:var(--dk);color:#fff;border-color:var(--dk)}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;margin-bottom:14px}
+.kpi{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 14px}
+.kpi b{display:block;font-size:22px;margin-top:2px}
+.kpi span{color:var(--mut);font-size:12.5px}
+.bad{color:var(--bad)}.warn{color:var(--warn)}.ok{color:var(--ok)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px;margin-bottom:12px;overflow-x:auto}
+.card h3{margin:0 0 8px;font-size:15px}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th{text-align:left;color:var(--mut);font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:.03em;padding:6px 8px;border-bottom:1px solid var(--line)}
+td{padding:8px;border-bottom:1px solid #f0eadc;vertical-align:top}
+tr:last-child td{border-bottom:0}
+.pill{display:inline-block;border-radius:999px;padding:2px 9px;font-size:12px;background:#eee;white-space:nowrap}
+.p-ATRASADA,.p-ATRASADO,.p-Bloqueado{background:#f4d9d3;color:var(--bad)}
+.p-Venceem{background:#f7e6c4;color:#7a5410}
+.p-Feito,.p-Pago{background:#d9e8d4;color:var(--ok)}
+.p-Aguardando{background:#dce6ee;color:var(--blue)}
+.filters{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}
+.filters select{padding:7px;border:1px solid var(--line);border-radius:8px;background:#fff}
+.bar{height:10px;background:#eadfc9;border-radius:6px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--dk)}
+.note{color:var(--mut);font-size:12.5px;margin-top:10px}
+a{color:var(--blue)}
+@media(max-width:600px){td,th{padding:6px 5px;font-size:13px}}
+</style>
+</head>
+<body>
+
+<div id="login" hidden>
+  <h2 style="margin:0">Gestão do casamento</h2>
+  <div style="color:var(--mut);font-size:13px">Lais & Willian · 12/12/2026</div>
+  <input id="senha" type="password" placeholder="Senha" autocomplete="current-password">
+  <div id="err"></div>
+  <button id="entrar">Entrar</button>
+</div>
+
+<div id="app" hidden>
+<header>
+  <div><h1>Gestão · Lais & Willian</h1><small id="sub"></small></div>
+  <div><button id="atualizar">Atualizar</button> <button id="sair">Sair</button></div>
+</header>
+<main>
+  <nav id="tabs"></nav>
+  <div id="view"></div>
+  <div class="note" id="foot"></div>
+</main>
+</div>
+
+<script>
+var D=null, TAB='geral', F={resp:'',status:'Abertas'};
+var $=function(s){return document.querySelector(s)};
+var brl=function(n){n=Number(n)||0;var s=Math.abs(n).toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g,'.');return (n<0?'-':'')+'R$ '+s};
+var esc=function(s){return String(s==null?'':s).replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})};
+var hoje=function(){var d=new Date();return new Date(d.getFullYear(),d.getMonth(),d.getDate())};
+var pd=function(s){if(!s)return null;var p=String(s).substring(0,10).split('-');return new Date(+p[0],+p[1]-1,+p[2])};
+var dias=function(s){var d=pd(s);return d?Math.round((d-hoje())/864e5):null};
+var fd=function(s){var d=pd(s);return d?('0'+d.getDate()).slice(-2)+'/'+('0'+(d.getMonth()+1)).slice(-2):''};
+function pill(t){if(!t)return'';var k=String(t).split(' ')[0].replace(/[^A-Za-zÀ-ú]/g,'');return '<span class="pill p-'+k+'">'+esc(t)+'</span>'}
+
+function situacaoT(t){
+  if(t['Status']==='Feito')return'Feito';
+  var d=dias(t['Prazo']); if(d===null)return'Sem prazo';
+  return d<0?'ATRASADA':d<=7?'Vence em até 7 dias':'No prazo';
+}
+function situacaoP(p){
+  if(p['Status']==='Pago')return'Pago';
+  var d=dias(p['Vencimento']); if(d===null)return'Sem data';
+  return d<0?'ATRASADO':d<=14?'Vence em até 14 dias':'No prazo';
+}
+
+async function carregar(){
+  var r=await fetch('/api/gestao-dados',{credentials:'same-origin'});
+  if(r.status===401){mostrarLogin();return}
+  D=await r.json();
+  if(!D.ok){$('#view').innerHTML='<div class="card">Não foi possível ler a planilha agora. Tente atualizar.</div>';return}
+  $('#login').hidden=true;$('#app').hidden=false;render();
+}
+function mostrarLogin(){$('#app').hidden=true;$('#login').hidden=false;$('#senha').focus()}
+
+async function entrar(){
+  $('#err').textContent='';
+  var r=await fetch('/api/gestao-login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({senha:$('#senha').value})});
+  var j=await r.json().catch(function(){return{}});
+  if(r.ok&&j.ok){$('#senha').value='';carregar()}else{$('#err').textContent=j.erro||'Erro ao entrar.'}
+}
+
+var TABS=[['geral','Visão geral'],['check','Checklist'],['crono','Cronograma'],['pag','Pagamentos'],['forn','Fornecedores']];
+function render(){
+  $('#tabs').innerHTML=TABS.map(function(t){return '<button class="'+(t[0]===TAB?'on':'')+'" data-t="'+t[0]+'">'+t[1]+'</button>'}).join('');
+  var f=dias(D.dataEvento);
+  $('#sub').textContent='Faltam '+f+' dias · atualizado '+new Date(D.geradoEm).toLocaleString('pt-BR');
+  $('#view').innerHTML=({geral:vGeral,check:vCheck,crono:vCrono,pag:vPag,forn:vForn})[TAB]();
+  $('#foot').innerHTML='Somente leitura. Para editar, use a <a href="#" onclick="return false">planilha</a> (Tarefas, Pagamentos etc.). O que for alterado lá aparece aqui ao atualizar.';
+}
+
+function vGeral(){
+  var ab=D.tarefas.filter(function(t){return t['Status']!=='Feito'});
+  var atr=ab.filter(function(t){return situacaoT(t)==='ATRASADA'});
+  var v7=ab.filter(function(t){return situacaoT(t)==='Vence em até 7 dias'});
+  var feitas=D.tarefas.length-ab.length;
+  var o=D.orcamento, teto=o['Teto do orçamento (R$)'], tot=o['Total previsto, todos os itens (R$)'], pago=o['Já pago (R$)'], dif=o['Diferença para o teto (R$), negativo = acima'];
+  var pct=D.tarefas.length?Math.round(feitas/D.tarefas.length*100):0;
+  var prox=D.pagamentos.filter(function(p){var s=situacaoP(p);return s==='ATRASADO'||s==='Vence em até 14 dias'}).sort(function(a,b){return String(a['Vencimento']).localeCompare(String(b['Vencimento']))});
+  var h='<div class="grid">'+
+   '<div class="kpi"><span>Dias para o casamento</span><b>'+dias(D.dataEvento)+'</b></div>'+
+   '<div class="kpi"><span>Tarefas concluídas</span><b>'+feitas+'/'+D.tarefas.length+'</b><div class="bar"><i style="width:'+pct+'%"></i></div></div>'+
+   '<div class="kpi"><span>Atrasadas</span><b class="'+(atr.length?'bad':'ok')+'">'+atr.length+'</b></div>'+
+   '<div class="kpi"><span>Vencem em 7 dias</span><b class="'+(v7.length?'warn':'ok')+'">'+v7.length+'</b></div>'+
+   '<div class="kpi"><span>Previsto / teto</span><b>'+brl(tot)+'</b><span>teto '+brl(teto)+'</span></div>'+
+   '<div class="kpi"><span>Já pago</span><b>'+brl(pago)+'</b></div>'+
+   '<div class="kpi"><span>Diferença p/ teto</span><b class="'+(dif<0?'bad':'ok')+'">'+brl(dif)+'</b></div></div>';
+  h+='<div class="card"><h3>Atrasadas e próximas (7 dias)</h3>'+tabT(atr.concat(v7),true)+'</div>';
+  h+='<div class="card"><h3>Pagamentos: atrasados e próximos 14 dias</h3>'+(prox.length?tabP(prox):'<div class="note">Nada a vencer nos próximos 14 dias.</div>')+'</div>';
+  // por responsável
+  var por={};ab.forEach(function(t){var k=t['Responsável']||'—';por[k]=(por[k]||0)+1});
+  h+='<div class="card"><h3>Pendências por responsável</h3>'+Object.keys(por).map(function(k){return '<span class="pill" style="margin-right:6px">'+esc(k)+': '+por[k]+'</span>'}).join('')+'</div>';
+  return h;
+}
+function tabT(arr,curto){
+  if(!arr.length)return'<div class="note">Nada por aqui.</div>';
+  arr=arr.slice().sort(function(a,b){return String(a['Prazo']||'9').localeCompare(String(b['Prazo']||'9'))});
+  return '<table><tr><th>Prazo</th><th>Tarefa</th><th>Resp.</th><th>Status</th>'+(curto?'':'<th>Fornecedor</th>')+'</tr>'+arr.map(function(t){
+    return '<tr><td>'+fd(t['Prazo'])+'</td><td>'+esc(t['Tarefa'])+(t['Notas']?'<div class="note" style="margin:2px 0 0">'+esc(t['Notas'])+'</div>':'')+'</td><td>'+esc(t['Responsável'])+'</td><td>'+pill(situacaoT(t))+' '+(t['Status']!=='Feito'?'<div class="note" style="margin:2px 0 0">'+esc(t['Status'])+'</div>':'')+'</td>'+(curto?'':'<td>'+esc(t['Fornecedor'])+'</td>')+'</tr>'}).join('')+'</table>';
+}
+function vCheck(){
+  var resps=[].concat.apply([],[D.tarefas.map(function(t){return t['Responsável']})]).filter(function(v,i,a){return v&&a.indexOf(v)===i});
+  var arr=D.tarefas.filter(function(t){
+    if(F.resp&&t['Responsável']!==F.resp)return false;
+    if(F.status==='Abertas')return t['Status']!=='Feito';
+    if(F.status==='Feitas')return t['Status']==='Feito';
+    return true});
+  var h='<div class="filters"><select id="fr"><option value="">Todos os responsáveis</option>'+resps.map(function(r){return '<option'+(F.resp===r?' selected':'')+'>'+esc(r)+'</option>'}).join('')+'</select>'+
+   '<select id="fs">'+['Abertas','Feitas','Todas'].map(function(s){return '<option'+(F.status===s?' selected':'')+'>'+s+'</option>'}).join('')+'</select></div>';
+  var cats={};arr.forEach(function(t){(cats[t['Categoria']||'Outros']=cats[t['Categoria']||'Outros']||[]).push(t)});
+  Object.keys(cats).forEach(function(c){h+='<div class="card"><h3>'+esc(c)+' ('+cats[c].length+')</h3>'+tabT(cats[c],false)+'</div>'});
+  return h||'';
+}
+function vCrono(){
+  var arr=D.cronograma.slice().sort(function(a,b){return String(a['Data']).localeCompare(String(b['Data']))});
+  return '<div class="card"><table><tr><th>Data</th><th>Marco</th><th>Tipo</th><th>Quando</th></tr>'+arr.map(function(m){
+    var d=dias(m['Data']);var q=d===null?'':d<0?'passou':d===0?'hoje':'em '+d+' d';
+    return '<tr style="'+(d!==null&&d<0?'opacity:.5':'')+'"><td>'+fd(m['Data'])+'</td><td>'+esc(m['Marco'])+'<div class="note" style="margin:2px 0 0">'+esc(m['Fornecedor ou fonte'])+'</div></td><td>'+esc(m['Tipo'])+'</td><td>'+q+'</td></tr>'}).join('')+'</table></div>';
+}
+function tabP(arr){
+  return '<table><tr><th>Venc.</th><th>Fornecedor</th><th>Descrição</th><th>Valor</th><th>Status</th></tr>'+arr.map(function(p){
+    return '<tr><td>'+fd(p['Vencimento'])+'</td><td>'+esc(p['Fornecedor'])+'</td><td>'+esc(p['Descrição'])+'<div class="note" style="margin:2px 0 0">'+esc(p['Forma'])+'</div></td><td>'+brl(p['Valor (R$)'])+'</td><td>'+pill(situacaoP(p))+' <div class="note" style="margin:2px 0 0">'+esc(p['Status'])+'</div></td></tr>'}).join('')+'</table>';
+}
+function vPag(){
+  var arr=D.pagamentos.slice().sort(function(a,b){return String(a['Vencimento']||'9').localeCompare(String(b['Vencimento']||'9'))});
+  return '<div class="card">'+tabP(arr)+'</div>';
+}
+function vForn(){
+  return '<div class="card"><table><tr><th>Fornecedor</th><th>Serviço</th><th>Situação</th><th>Total</th><th>Pago</th><th>Grupo WhatsApp</th><th>Contrato</th></tr>'+D.fornecedores.map(function(f){
+    return '<tr><td>'+esc(f['Fornecedor'])+'</td><td>'+esc(f['Categoria'])+'</td><td>'+esc(f['Situação'])+'</td><td>'+brl(f['Total previsto (R$)']||f['Total'])+'</td><td>'+brl(f['Já pago (R$)'])+'</td><td>'+esc(f['Grupo de WhatsApp criado?'])+'</td><td>'+esc(f['Contrato assinado?'])+'</td></tr>'}).join('')+'</table></div>';
+}
+
+document.addEventListener('click',function(e){var b=e.target.closest('[data-t]');if(b){TAB=b.dataset.t;render()}});
+document.addEventListener('change',function(e){if(e.target.id==='fr'){F.resp=e.target.value;render()}if(e.target.id==='fs'){F.status=e.target.value;render()}});
+$('#entrar').onclick=entrar;
+$('#senha').addEventListener('keydown',function(e){if(e.key==='Enter')entrar()});
+$('#atualizar').onclick=carregar;
+$('#sair').onclick=async function(){await fetch('/api/gestao-login',{method:'DELETE'});mostrarLogin()};
+carregar();
+</script>
+</body>
+</html>
