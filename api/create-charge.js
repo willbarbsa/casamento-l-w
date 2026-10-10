@@ -18,6 +18,19 @@ var VALORES_PERMITIDOS = [
   1950, 1980, 2090, 2330, 2800, 3600, 3730, 4000
 ];
 
+// external_reference (máx. 256 caracteres) é devolvido de forma confiável pelo Mercado Pago,
+// então levamos item + nome + mensagem nele (o webhook lê de volta). A mensagem é cortada se não couber.
+function refCompacta(item, nome, mensagem) {
+  var m = mensagem || '';
+  var ref = JSON.stringify({ i: item, n: nome, m: m });
+  while (ref.length > 256 && m.length > 0) {
+    m = m.slice(0, Math.max(0, m.length - Math.max(5, ref.length - 256)));
+    ref = JSON.stringify({ i: item, n: nome, m: m });
+  }
+  if (ref.length > 256) ref = JSON.stringify({ i: item.slice(0, 80), n: nome.slice(0, 80), m: '' });
+  return ref;
+}
+
 module.exports = async function handler(req, res) {
   if (req.method !== 'POST') {
     res.status(405).json({ error: 'method not allowed' });
@@ -59,7 +72,7 @@ module.exports = async function handler(req, res) {
         description: 'Presente de casamento — ' + item + ' (de ' + nome + ')',
         metadata: { nome: nome, mensagem: mensagem },
         payment_method_id: 'pix',
-        external_reference: item,
+        external_reference: refCompacta(item, nome, mensagem),
         // Mercado Pago exige um e-mail de pagador — não coletamos isso no
         // site, então usamos um e-mail fixo do casal. Ajustar aqui se
         // quiserem coletar o e-mail de quem está presenteando.

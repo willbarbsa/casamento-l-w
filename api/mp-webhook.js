@@ -43,7 +43,11 @@ module.exports = async function handler(req, res) {
     }
     // Nome: vem do metadata; se o Mercado Pago não devolver, extrai da descrição
     // "Presente de casamento — Item (de Nome)".
-    var nomeDoPagamento = (payment.metadata && payment.metadata.nome) || '';
+    var ref = null;
+    try { ref = JSON.parse(payment.external_reference); } catch (e) { ref = null; }
+    var itemDoPagamento = (ref && ref.i) || payment.external_reference;
+    var nomeDoPagamento = (payment.metadata && payment.metadata.nome) || (ref && ref.n) || '';
+    var mensagemDoPagamento = (payment.metadata && payment.metadata.mensagem) || (ref && ref.m) || '';
     if (!nomeDoPagamento && payment.description) {
       var mm = /\(de (.*)\)\s*$/.exec(payment.description);
       if (mm) nomeDoPagamento = mm[1];
@@ -57,10 +61,10 @@ module.exports = async function handler(req, res) {
         body: JSON.stringify({
           action: 'presente',
           segredo: appsScriptSecret,
-          item: payment.external_reference,
+          item: itemDoPagamento,
           valor: payment.transaction_amount,
           nome: nomeDoPagamento,
-          mensagem: (payment.metadata && payment.metadata.mensagem) || '',
+          mensagem: mensagemDoPagamento,
           paymentId: payment.id
         })
       });
