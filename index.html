@@ -335,8 +335,13 @@
   .gift-drawer-close:hover{ background:var(--hair); }
   .gift-drawer-title{ font-size:.62rem; letter-spacing:.18em; text-transform:uppercase; color:var(--gold); margin:var(--sp-3) 0 4px; text-align:center; }
   .gift-drawer-price{ display:block; margin-top:4px; font-size:.9rem; color:var(--gray); letter-spacing:.04em; }
+  .gift-drawer-thumb{ width:84px; height:84px; margin:0 auto 12px; border:1px solid var(--hair-strong); border-radius:16px; background:var(--card); color:var(--gold); padding:20px; overflow:hidden; }
+  .gift-drawer-thumb svg{ width:100%; height:100%; display:block; }
+  .gift-drawer-thumb img{ width:100%; height:100%; object-fit:cover; display:block; }
+  .gift-drawer-thumb.photo{ padding:0; }
   .gift-drawer-item{ font-size:1.15rem; color:var(--dark); text-align:center; margin-bottom:var(--sp-3); }
   .gift-drawer-body{ text-align:center; margin-top:var(--sp-2); }
+  .gift-scan{ font-size:.95rem; font-weight:500; line-height:1.5; color:var(--dark); margin:0 0 var(--sp-2); padding:12px 14px; background:var(--card); border:1px solid var(--hair-strong); border-radius:12px; }
   .gift-drawer-body img{ width:210px; height:210px; border-radius:10px; border:1px solid var(--hair-strong); }
   .gift-drawer-body .copia-cola{
     width:100%; margin-top:var(--sp-3); background:var(--card); border:1px solid var(--hair-strong);
@@ -488,8 +493,6 @@
     <div class="box"><div class="n" id="cd-min">–</div><div class="l">min</div></div>
     <div class="box"><div class="n" id="cd-seg">–</div><div class="l">seg</div></div>
   </div>
-
-  <a href="#rsvp" class="btn solid">Confirmar presença</a>
 </section>
 
 <!-- O DIA 12 -->
@@ -1192,8 +1195,12 @@
 
   function escHtml(s){ return String(s).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
 
-  function showGiftForm(itemName, value){
-    giftDrawerItem.innerHTML = escHtml(itemName) + '<span class="gift-drawer-price">R$ ' + value.toLocaleString('pt-BR') + '</span>';
+  function showGiftForm(itemName, value, card){
+    var photo = card && card.getAttribute('data-img');
+    var iconEl = card && card.querySelector('.gift-icon');
+    var thumb = photo ? '<span class="gift-drawer-thumb photo"><img src="' + escHtml(photo) + '" alt=""></span>'
+              : (iconEl ? '<span class="gift-drawer-thumb">' + iconEl.innerHTML + '</span>' : '');
+    giftDrawerItem.innerHTML = thumb + escHtml(itemName) + '<span class="gift-drawer-price">R$ ' + value.toLocaleString('pt-BR') + '</span>';
     giftDrawerBody.innerHTML =
       '<form class="gift-form" id="gift-form" novalidate>' +
         '<label for="gift-nome">Seu nome</label>' +
@@ -1233,10 +1240,11 @@
           return;
         }
         giftDrawerBody.innerHTML =
+          '<p class="gift-scan">Escaneie o QR code ou use o código copia e cola abaixo, no app do seu banco.</p>' +
           '<p class="gift-from">De: ' + escHtml(nome) + '</p>' +
           (data.qrCodeBase64 ? '<img src="data:image/png;base64,' + data.qrCodeBase64 + '" alt="QR code do PIX">' : '') +
           '<textarea class="copia-cola" rows="3" readonly onclick="this.select()">' + escHtml(data.copiaECola) + '</textarea>' +
-          '<p class="ac-hint">Escaneie o QR code ou copie o código acima no seu app do banco.</p>';
+          '';
       })
       .catch(function(){
         giftDrawerBody.innerHTML = '<p class="ac-hint">Não conseguimos gerar o PIX agora — tenta de novo em instantes.</p>';
@@ -1246,7 +1254,7 @@
   document.querySelectorAll('.gift-card').forEach(function(row){
     var value = parseFloat(row.getAttribute('data-value'));
     var itemName = row.querySelector('.gift-name').textContent;
-    row.querySelector('.gift-contribute-btn').addEventListener('click', function(){ showGiftForm(itemName, value); });
+    row.querySelector('.gift-contribute-btn').addEventListener('click', function(){ showGiftForm(itemName, value, row); });
   });
 
   // setas de navegação do carrossel de presentes
@@ -1370,21 +1378,26 @@
     return { label: item.label || item.value || '', value: item.value || item.label || '' };
   }
 
+  // Só aparece quem tem a PALAVRA INTEIRA digitada (sem acento/maiúscula):
+  // "ana" encontra "Ana Beatriz", mas não "Juliana", "Jordana" nem "Ananda".
+  function semAcentoJS(t){ return String(t || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase(); }
+  function nomeExato(nomeCompleto, query){
+    var q = semAcentoJS(query).split(/\s+/).filter(Boolean);
+    var n = semAcentoJS(nomeCompleto).split(/\s+/).filter(Boolean);
+    return q.length > 0 && q.every(function(w){ return n.indexOf(w) !== -1; });
+  }
+
   function searchGuests(query, callback){
     query = (query || '').trim();
     if(query.length < 2){ callback([]); return; }
     if(GUEST_SEARCH_ENDPOINT_URL){
       fetch(GUEST_SEARCH_ENDPOINT_URL + '?q=' + encodeURIComponent(query))
         .then(function(r){ return r.json(); })
-        .then(function(list){ callback((list || []).map(normalizeGuestResult)); })
+        .then(function(list){ callback((list || []).map(normalizeGuestResult).filter(function(g){ return nomeExato(g.value, query); })); })
         .catch(function(){ callback([]); });
       return;
     }
-    var queryWords = query.toLowerCase().split(/\s+/).filter(Boolean);
-    callback(DEMO_GUEST_LIST.filter(function(n){
-      var nameWords = n.toLowerCase().split(/\s+/).filter(Boolean);
-      return queryWords.every(function(qw){ return nameWords.some(function(nw){ return nw.indexOf(qw) === 0; }); });
-    }).map(normalizeGuestResult));
+    callback(DEMO_GUEST_LIST.filter(function(n){ return nomeExato(n, query); }).map(normalizeGuestResult));
   }
 
   // ---- campo "seu nome" (seleção obrigatória, não aceita texto livre) ----
@@ -1417,7 +1430,7 @@
   function renderAcList(container, results, onPick){
     container.innerHTML = '';
     if(results.length === 0){
-      container.innerHTML = '<div class="ac-empty">Nenhum nome encontrado — verifique a grafia ou fale com a gente.</div>';
+      container.innerHTML = '<div class="ac-empty">Nenhum nome encontrado — digite o nome completo, como no convite, ou fale com a gente.</div>';
     } else {
       results.forEach(function(r){
         var item = document.createElement('div');
