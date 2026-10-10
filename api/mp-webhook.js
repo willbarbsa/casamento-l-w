@@ -41,6 +41,15 @@ module.exports = async function handler(req, res) {
     if (payment.status === 'approved' && !appsScriptUrl) {
       console.log('[mp-webhook] ERRO: APPS_SCRIPT_URL não configurada na Vercel');
     }
+    // Nome: vem do metadata; se o Mercado Pago não devolver, extrai da descrição
+    // "Presente de casamento — Item (de Nome)".
+    var nomeDoPagamento = (payment.metadata && payment.metadata.nome) || '';
+    if (!nomeDoPagamento && payment.description) {
+      var mm = /\(de (.*)\)\s*$/.exec(payment.description);
+      if (mm) nomeDoPagamento = mm[1];
+    }
+    console.log('[mp-webhook] metadata', JSON.stringify(payment.metadata || null), 'nome:', nomeDoPagamento);
+
     if (payment.status === 'approved' && appsScriptUrl) {
       var asResp = await fetch(appsScriptUrl, {
         method: 'POST',
@@ -50,8 +59,8 @@ module.exports = async function handler(req, res) {
           segredo: appsScriptSecret,
           item: payment.external_reference,
           valor: payment.transaction_amount,
-          nome: payment.metadata && payment.metadata.nome,
-          mensagem: payment.metadata && payment.metadata.mensagem,
+          nome: nomeDoPagamento,
+          mensagem: (payment.metadata && payment.metadata.mensagem) || '',
           paymentId: payment.id
         })
       });
