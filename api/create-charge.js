@@ -12,6 +12,7 @@
 // presentes — os mesmos valores dos 53 itens do site. Se o
 // catálogo mudar de preços, atualize essa lista também.
 var VALORES_PERMITIDOS = [
+  0.01, // presente "Teste" (só visível em ?teste=1) — remover antes do lançamento
   190, 220, 300, 330, 360, 380, 400, 410, 420, 430, 460, 470, 480, 500,
   520, 590, 600, 640, 650, 660, 730, 780, 820, 870, 910, 960, 980, 1000,
   1270, 1450, 1490, 1510, 1580, 1640, 1700, 1770, 1790, 1840, 1880, 1900,
