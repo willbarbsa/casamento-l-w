@@ -19,13 +19,13 @@ module.exports = async function handler(req, res) {
 
   var accessToken = process.env.MP_ACCESS_TOKEN;
   var appsScriptUrl = process.env.APPS_SCRIPT_URL;
-  var appsScriptSecret = process.env.APPS_SCRIPT_SECRET;
+  var appsScriptSecret = (process.env.APPS_SCRIPT_SECRET || '').trim();
 
   try {
     var paymentId = (req.body && req.body.data && req.body.data.id) ||
       (req.query && (req.query['data.id'] || req.query.id));
     console.log('[mp-webhook] recebido', JSON.stringify({ tipo: req.body && (req.body.type || req.body.action), paymentId: paymentId || null,
-      temToken: !!accessToken, temAppsScriptUrl: !!appsScriptUrl, temSegredo: !!appsScriptSecret }));
+      temToken: !!accessToken, temAppsScriptUrl: !!appsScriptUrl, temSegredo: !!appsScriptSecret, segredoLen: appsScriptSecret.length }));
     if (!paymentId) {
       // Mercado Pago também manda notificações de outros tipos — ignoramos.
       res.status(200).end();
