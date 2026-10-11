@@ -90,6 +90,10 @@ details.n>summary{cursor:pointer;color:var(--blue);font-size:12.5px;margin-top:3
 .next h3{margin:3px 0 4px;font-size:18px}
 .pill.pp{background:#e8e0ce}
 @media(max-width:700px){.cm .dt{flex-basis:56px}}
+.chk{width:20px;height:20px;accent-color:#4f7a4a;cursor:pointer;vertical-align:middle;margin:0 6px 0 0}
+.done-t{text-decoration:line-through;color:var(--mut)}
+.by{color:var(--mut);font-size:12px;margin-top:2px}
+#toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:#2d2820;color:#fff;padding:9px 16px;border-radius:999px;font-size:13px;z-index:20;display:none}
 @media(max-width:700px){td,th{padding:6px 5px;font-size:13px}.kan{grid-template-columns:repeat(5,80vw)}}
 </style>
 </head>
@@ -109,7 +113,7 @@ details.n>summary{cursor:pointer;color:var(--blue);font-size:12.5px;margin-top:3
   <div><button id="atualizar">Atualizar</button> <button id="sair">Sair</button></div>
 </header>
 <main>
-  <div id="alerta"></div>
+  <div id="alerta"></div><div id="toast"></div>
   <nav id="tabs"></nav>
   <div id="view"></div>
   <div class="note">Somente leitura. Para editar, use a planilha. O que for alterado lá aparece aqui ao clicar em Atualizar.</div>
@@ -190,12 +194,38 @@ function pessoas(){
     return '<button class="person'+(F.resp===n&&TAB==='check'?' sel':'')+'" data-p="'+esc(n)+'" style="background:'+cor(n)+'">'+(at?'<em>'+at+' atrasada'+(at>1?'s':'')+'</em>':'')+'<span>'+esc(n)+'</span><b>'+m.length+'</b><span>pendência'+(m.length===1?'':'s')+'</span></button>'}).join('')+'</div>';
 }
 
+function chkT(t){return '<input type="checkbox" class="chk" data-chk="Tarefas|'+esc(t['ID'])+'"'+(t['Status']==='Feito'?' checked':'')+' aria-label="Concluir tarefa">'}
+function feitoPor(t){
+  if(t['Status']!=='Feito'||!t['Atualizado em'])return '';
+  var por=String(t['Atualizado por']||'').replace(/^Painel ·\s*/,'').replace('willianeduardob@gmail.com','Willian');
+  return '<div class="by">concluída em '+fd(t['Atualizado em'])+(por?' · '+esc(por):'')+'</div>';
+}
+function statusTxt(t){var s=t['Status'];return (s==='A fazer'||s==='Feito')?'':'<span class="pill p-Aguardando">'+esc(s)+'</span>'}
+function toast(m){var t=$('#toast');t.textContent=m;t.style.display='block';clearTimeout(toast.t);toast.t=setTimeout(function(){t.style.display='none'},1800)}
+async function marcar(el){
+  var p=el.dataset.chk.split('|'),aba=p[0],id=p[1],feito=el.checked;
+  var lista=aba==='Tarefas'?D.tarefas:D.comunicacao;
+  var it=lista.filter(function(x){return String(x['ID'])===id})[0];if(!it)return;
+  var antes={s:it['Status'],em:it['Atualizado em'],por:it['Atualizado por']};
+  it['Status']=feito?(aba==='Tarefas'?'Feito':'Enviado'):'A fazer';
+  if(aba==='Tarefas'){it['Atualizado em']=new Date().toISOString().substring(0,10);it['Atualizado por']='Painel · '+D.perfil}
+  render();
+  try{
+    var r=await fetch('/api/gestao-marcar',{method:'POST',headers:{'Content-Type':'application/json'},credentials:'same-origin',body:JSON.stringify({aba:aba,id:id,feito:feito})});
+    if(r.status===401){mostrarLogin();return}
+    var j=await r.json();
+    if(!j.ok)throw new Error(j.erro||'erro');
+    toast('Salvo ✓');
+  }catch(e){
+    it['Status']=antes.s;it['Atualizado em']=antes.em;it['Atualizado por']=antes.por;render();toast('Não foi possível salvar. Tente de novo.');
+  }
+}
 function tabT(arr,curto){
   if(!arr.length)return'<div class="note">Nada por aqui.</div>';
   arr=arr.slice().sort(function(a,b){return String(a['Prazo']||'9').localeCompare(String(b['Prazo']||'9'))});
-  return '<table><thead><tr><th>Prazo</th><th>Tarefa</th><th>Resp.</th><th>Status</th>'+(curto?'':'<th>Fornecedor</th>')+'</tr></thead><tbody>'+arr.map(function(t){
+  return '<table><thead><tr><th></th><th>Prazo</th><th>Tarefa</th><th>Resp.</th><th>Status</th>'+(curto?'':'<th>Fornecedor</th>')+'</tr></thead><tbody>'+arr.map(function(t){
     var n=t['Notas']?'<details class="n"><summary>notas</summary><div class="mini">'+esc(t['Notas'])+'</div></details>':'';
-    return '<tr><td style="white-space:nowrap">'+chipPrazo(t)+'</td><td>'+esc(t['Tarefa'])+n+'</td><td><span class="dot" style="background:'+cor(t['Responsável'])+'"></span>'+esc(t['Responsável'])+'</td><td>'+esc(t['Status'])+'</td>'+(curto?'':'<td>'+esc(t['Fornecedor'])+'</td>')+'</tr>'}).join('')+'</tbody></table>';
+    return '<tr><td style="width:34px">'+chkT(t)+'</td><td style="white-space:nowrap">'+chipPrazo(t)+'</td><td>'+(t['Status']==='Feito'?'<span class="done-t">'+esc(t['Tarefa'])+'</span>':esc(t['Tarefa']))+feitoPor(t)+n+'</td><td><span class="dot" style="background:'+cor(t['Responsável'])+'"></span>'+esc(t['Responsável'])+'</td><td>'+statusTxt(t)+'</td>'+(curto?'':'<td>'+esc(t['Fornecedor'])+'</td>')+'</tr>'}).join('')+'</tbody></table>';
 }
 
 function vGeral(){
@@ -242,7 +272,7 @@ function vCheck(){
     h+='<div class="kan">'+STAT.map(function(s){
       var c=arr.filter(function(t){return t['Status']===s}).sort(function(a,b){return String(a['Prazo']||'9').localeCompare(String(b['Prazo']||'9'))});
       return '<div class="col"><h4><span>'+s+'</span><span>'+c.length+'</span></h4>'+c.map(function(t){
-        return '<div class="kc" style="border-left-color:'+cor(t['Responsável'])+'"><div class="t">'+esc(t['Tarefa'])+'</div>'+chipPrazo(t)+
+        return '<div class="kc" style="border-left-color:'+cor(t['Responsável'])+'"><div class="t">'+chkT(t)+(t['Status']==='Feito'?'<span class="done-t">'+esc(t['Tarefa'])+'</span>':esc(t['Tarefa']))+'</div>'+chipPrazo(t)+feitoPor(t)+
           '<div class="mini"><span class="dot" style="background:'+cor(t['Responsável'])+'"></span>'+esc(t['Responsável'])+(t['Fornecedor']?' · '+esc(t['Fornecedor']):'')+'</div>'+
           (t['Notas']?'<details class="n"><summary>notas</summary><div class="mini">'+esc(t['Notas'])+'</div></details>':'')+'</div>'}).join('')+'</div>'}).join('')+'</div>';
     return h;
@@ -310,10 +340,11 @@ function vCom(){
     var st=comEstado(i), idx=COMTXT.push(i.texto||'')-1, d=i.data?dias(i.data):null;
     var data=i.data?'<div class="dt"><b>'+fd(i.data)+(i.ate?'<span>a '+fd(i.ate)+'</span>':'')+'</b><span>'+DSEM[pd(i.data).getDay()]+'</span></div>':'<div class="dt"><b>↻</b><span>sempre</span></div>';
     var quando=!i.data?'':(i.status==='Enviado'?'':d<0?' · <span class="bad">'+(-d)+'d de atraso</span>':d===0?' · <b>hoje</b>':' · em '+d+' d');
-    return '<div class="cm '+st+'">'+data+'<div class="bd"><div class="tt">'+esc(i.acao)+'</div>'+
+    var cx=i.data?'<input type="checkbox" class="chk" data-chk="Comunicação|'+esc(i.id)+'"'+(i.status==='Enviado'?' checked':'')+' aria-label="Marcar como enviado">':'';
+    return '<div class="cm '+st+'">'+data+'<div class="bd"><div class="tt">'+cx+(i.status==='Enviado'?'<span class="done-t">'+esc(i.acao)+'</span>':esc(i.acao))+'</div>'+
       '<div class="meta"><span class="dot" style="background:'+cor(String(i.quem).split(' ')[0])+'"></span>'+esc(i.quem)+
       (i.pub&&i.pub!=='—'?' <span class="pill pp">'+esc(i.pub)+'</span>':'')+(i.canal&&i.canal!=='—'?' <span class="pill pp">'+esc(i.canal)+'</span>':'')+
-      ' '+pill(i.status==='Enviado'?'Feito':i.status)+quando+'</div>'+
+      ' '+(i.status==='A fazer'||i.status==='Enviado'||i.status==='Contínuo'?(i.status==='Enviado'?pill('Feito'):''):pill(i.status))+quando+'</div>'+
       (i.obs?'<div class="mini">'+esc(i.obs)+'</div>':'')+
       (i.texto?'<details class="n"><summary>ver texto</summary><div class="txtbox">'+esc(i.texto)+'</div><button class="btn2" data-copy="'+idx+'">Copiar texto</button><button class="btn2 wa" data-wa="'+idx+'">Abrir no WhatsApp</button></details>':'')+
       '</div></div>';
@@ -368,6 +399,7 @@ document.addEventListener('click',function(e){
   if(e.target.closest('[data-clear]')){F.resp='';F.cat='';render()}
 });
 document.addEventListener('change',function(e){
+  if(e.target.classList&&e.target.classList.contains('chk')){marcar(e.target);return}
   var m={fr:'resp',fc:'cat',fs:'status',ft:'tipo',fp:'pstatus',fpf:'pforn',fsit:'fsit',cq:'cquem',cp:'cpub',cs:'cstat'};
   if(m[e.target.id]){F[m[e.target.id]]=e.target.value;render()}
 });
