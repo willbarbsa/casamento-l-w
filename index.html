@@ -679,6 +679,13 @@
     <div class="gift-carousel-wrap">
       <button type="button" class="carousel-arrow carousel-prev" aria-label="Anterior">&#8249;</button>
       <div class="gift-carousel">
+        <div class="gift-card gift-card-teste" data-value="0.01" style="display:none">
+          <div class="gift-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3h6M10 3v6l-5 9a2 2 0 0 0 2 3h10a2 2 0 0 0 2-3l-5-9V3"/></svg></div>
+          <div class="gift-name">Teste</div>
+          <div class="gift-value">R$ 0,01</div>
+          <button class="gift-contribute-btn" type="button">Presentear</button>
+          <div class="gift-payment-result"></div>
+        </div>
         <div class="gift-card" data-value="190">
           <div class="gift-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><path d="M10 2h4v4.5c1.2.9 2 2.4 2 4.1V20a2 2 0 0 1-2 2h-4a2 2 0 0 1-2-2v-9.4c0-1.7.8-3.2 2-4.1V2z"/><line x1="9" y1="13" x2="15" y2="13"/></svg></div>
           <div class="gift-name">Porta-retratos artesanal (kit)</div>
@@ -1288,6 +1295,11 @@
       .catch(function(){
         giftDrawerBody.innerHTML = '<p class="ac-hint">Não conseguimos gerar o PIX agora — tenta de novo em instantes.</p>';
       });
+  }
+
+  // Presente "Teste" (R$ 0,01): só aparece com ?teste=1 na URL, para testar o PIX sem custo.
+  if(/[?&]teste=1/.test(location.search)){
+    document.querySelectorAll('.gift-card-teste').forEach(function(c){ c.style.display = ''; });
   }
 
   document.querySelectorAll('.gift-card').forEach(function(row){
