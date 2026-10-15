@@ -192,10 +192,13 @@ async function marcar(el){
     if(!j.ok)throw new Error(j.erro||'erro');
     toast(feito?'Marcado como concluído ✓':'Voltou para "a fazer" ✓',function(){marcar({dataset:{chk:aba+'|'+id},checked:!feito})});
   }catch(e){
-    it['Status']=antes.s;it['Atualizado em']=antes.em;it['Atualizado por']=antes.por;render();toast('Não foi possível salvar. Tente de novo.');
+    it['Status']=antes.s;it['Atualizado em']=antes.em;it['Atualizado por']=antes.por;render();toast(/permiss/.test(e.message)?e.message:'Não foi possível salvar. Tente de novo.');
   }
 }
-function chkT(t){var id=esc(t['ID']);return '<input type="checkbox" class="chk" '+(id?'data-chk="Tarefas|'+id+'"':'disabled title="Tarefa sem ID na planilha"')+(t['Status']==='Feito'?' checked':'')+' aria-label="Concluir tarefa">'}
+/* quem pode marcar: o Dani só os itens dele; o casal os de Lais, Willian e Casal (a regra também é imposta na planilha) */
+function podeT(dono){var d=String(dono||'').toLowerCase();return D.perfil==='dani'?d==='dani':d!=='dani'}
+function podeC(quem){var d=String(quem||'').toLowerCase();if(!d||d==='—')return true;return D.perfil==='dani'?d.indexOf('dani')>-1:d.indexOf('casal')>-1}
+function chkT(t){var id=esc(t['ID']),ok=podeT(t['Responsável']);return '<input type="checkbox" class="chk" '+(id&&ok?'data-chk="Tarefas|'+id+'"':'disabled title="'+(ok?'Tarefa sem ID na planilha':'Só '+esc(t['Responsável']||'o responsável')+' pode concluir esta tarefa')+'"')+(t['Status']==='Feito'?' checked':'')+' aria-label="Concluir tarefa">'}
 function feitoPor(t){
   if(t['Status']!=='Feito'||!t['Atualizado em'])return '';
   var por=String(t['Atualizado por']||'').replace(/^Painel ·\s*/,'').replace('willianeduardob@gmail.com','Willian');
@@ -310,7 +313,8 @@ function vCom(){
   function card(i){
     var st=comEstado(i),idx=COMTXT.push(i.texto||'')-1,d=i.data?dias(i.data):null;
     var sub=!i.data?'após cada RSVP':i.ate?'até '+fd(i.ate):(i.status==='Enviado'?'enviado':d<0?(-d)+'d de atraso':d===0?'hoje':'em '+d+' dias');
-    var cx=i.data?'<input type="checkbox" class="chk" data-chk="Comunicação|'+esc(i.id)+'"'+(i.status==='Enviado'?' checked':'')+' aria-label="Marcar como enviado"> ':'';
+    var okc=podeC(i.quem);
+    var cx=i.data?'<input type="checkbox" class="chk" '+(okc?'data-chk="Comunicação|'+esc(i.id)+'"':'disabled title="Só quem envia ('+esc(i.quem)+') marca"')+(i.status==='Enviado'?' checked':'')+' aria-label="Marcar como enviado"> ':'';
     return '<div class="cm '+st+'"><div class="dt">'+(i.data?fd(i.data):'↻')+'<small>'+(i.data?DSEM[pd(i.data).getDay()]+' · ':'')+sub+'</small></div><div>'+
       '<div style="display:flex;justify-content:space-between;gap:10px;align-items:flex-start"><b style="font-weight:500">'+cx+(i.status==='Enviado'?'<span class="done-t">'+esc(i.acao)+'</span>':esc(i.acao))+'</b>'+(i.status==='Enviado'?chip('Enviado','#627a53'):i.status==='Contínuo'?chip('Contínuo','#7f8c73'):'')+'</div>'+
       '<div class="mini">'+esc(i.pub&&i.pub!=='—'?i.pub+' · ':'')+esc(i.canal&&i.canal!=='—'?i.canal+' · ':'')+'envia: '+esc(i.quem)+'</div>'+(i.obs?'<div class="mini">'+esc(i.obs)+'</div>':'')+
@@ -343,14 +347,16 @@ function vForn(){
 
 function vPres(){
   var e=D.extra;
-  if(!e||!e.presentes)return '<div class="note">A lista de presentes ainda não está conectada. Falta colar um trecho no Apps Script da Gestão (veja as instruções que enviei no chat).</div>';
+  if(!e)return '<div class="note">O Apps Script da Gestão ainda não está enviando os presentes. Falta colar os 2 trechos e publicar uma <b>Nova versão</b> da implantação.</div>';
+  if(e.erro)return '<div class="note">O Apps Script respondeu com erro ao ler a planilha de convidados:<br><b>'+esc(e.erro)+'</b></div>';
+  if(!e.presentes)return '<div class="note">Resposta sem a lista de presentes.</div>';
   var P=e.presentes.slice().reverse(),tot=P.reduce(function(s,p){return s+p.valor},0);
   return '<div class="grid k4"><div class="card kpi"><b class="green">'+brl(tot)+'</b><span>recebido via PIX</span></div><div class="card kpi"><b>'+P.length+'</b><span>presentes pagos</span></div></div>'+
    '<div class="card"><h2>Quem presenteou</h2>'+(P.map(function(p){return '<div class="item"><div class="gift"><div class="av">🎁</div><div><b style="font-weight:500">'+esc(p.nome||'Sem nome')+'</b><small>'+esc(p.item)+' · '+fd(p.data)+'</small>'+(p.msg?'<small>“'+esc(p.msg)+'”</small>':'')+'</div></div><b>'+brl(p.valor)+'</b></div>'}).join('')||'<div class="mini">Nenhum presente ainda.</div>')+'</div>';
 }
 
 var FDS=[['Sexta · 11/12',[['09h','Montagem dos fornecedores','Araucária · Dani','#7f8c73'],['14h–21h','Check-in dos hóspedes (a confirmar)','Chalés','#a8744c'],['Noite','Pré-wedding: pizzada','Santa Pizza · até 40 pessoas','#A98F6B'],['00h','Fim da pizzada (a confirmar)','','#6B6153']]],
-['Sábado · 12/12',[['Manhã','Montagem final','Rose, Deliziare, Mara','#7f8c73'],['Tarde','Making of (a confirmar)','Ale Cavaliere','#A98F6B'],['16h30','Recepção dos convidados','','#627a53'],['17h','Cerimônia','Varanda coberta se chover','#627a53'],['18h','Brinde e jantar (a confirmar)','','#a8744c'],['20h','Festa com a banda (a confirmar)','','#A98F6B'],['01h30','Fim da festa','Limite 80 dB após 00h','#6B6153']]],
+['Sábado · 12/12',[['Manhã','Montagem final','Rose, Deliziare, Mara','#7f8c73'],['13h30','Gerador em stand by (FBS)','Contrato: até 01h30, hora extra R$ 180','#6B6153'],['Tarde','Making of (a confirmar)','Ale Cavaliere','#A98F6B'],['16h30','Recepção dos convidados','','#627a53'],['17h','Cerimônia','Varanda coberta se chover','#627a53'],['18h','Brinde e jantar (a confirmar)','','#a8744c'],['20h','Festa com a banda (a confirmar)','','#A98F6B'],['01h30','Fim da festa','Limite 80 dB após 00h','#6B6153']]],
 ['Domingo · 13/12',[['Manhã','Café e saída dos hóspedes (a confirmar)','','#a8744c'],['até 17h','Desmontagem dos fornecedores','Multa R$ 500/h por atraso','#7f8c73'],['—','Vistoria final com o Araucária','Dani','#7f8c73']]]];
 function vFds(){return '<div class="note">Horários "a confirmar" são sugestões. Os demais vêm do contrato do Araucária e do site.</div><div class="grid c3">'+FDS.map(function(x){return '<div class="card"><h2>'+x[0]+'</h2><div class="tl">'+x[1].map(function(e){return '<div class="ev" style="--c:'+e[3]+'"><div class="h">'+e[0]+'</div><div>'+e[1]+'</div>'+(e[2]?'<div class="o">'+e[2]+'</div>':'')+'</div>'}).join('')+'</div></div>'}).join('')+'</div>'}
 
