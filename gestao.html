@@ -307,7 +307,7 @@ function vCom(){
     h+='<div class="next"><small>Próximo disparo</small><h3>'+esc(n.acao)+'</h3><div>'+fd(n.data)+' ('+DSEM[pd(n.data).getDay()]+') · '+(dd<0?(-dd)+' dias de atraso':dd===0?'hoje':'em '+dd+' dias')+' · quem envia: <b style="font-weight:500">'+esc(n.quem)+'</b>'+(n.pub&&n.pub!=='—'?' · público: '+esc(n.pub):'')+'</div></div>'}
   h+='<div class="grid k4"><div class="card kpi"><b>'+feitos+'/'+tot+'</b><span>etapas da régua concluídas</span></div>'+
      '<div class="card kpi"><b class="'+(atras?'red':'green')+'">'+atras+'</b><span>atrasadas</span></div>'+
-     '<div class="card kpi"><b class="green">'+(c?Math.round(c.confirmados/(c.total||1)*100)+'%':'—')+'</b><span>responderam (confirmados)</span></div>'+
+     '<div class="card kpi"><b class="green">'+(c?Math.round(((c.confirmados||0)+(c.declinados||0))/(c.total||1)*100)+'%':'—')+'</b><span>já responderam (confirmaram ou recusaram)</span></div>'+
      '<div class="card kpi"><b>'+(c?c.pendentes:'—')+'</b><span>pendentes de resposta</span></div></div>';
   h+='<div class="filters">'+sel('cq','Quem envia',quem,F.cq)+sel('cp','Público',pubs,F.cp)+sel('cs','Status',['A fazer','Em andamento','Enviado','Contínuo'],F.cs)+'</div>';
   function card(i){
@@ -355,7 +355,7 @@ function vPres(){
    '<div class="card"><h2>Quem presenteou</h2>'+(P.map(function(p){return '<div class="item"><div class="gift"><div class="av">🎁</div><div><b style="font-weight:500">'+esc(p.nome||'Sem nome')+'</b><small>'+esc(p.item)+' · '+fd(p.data)+'</small>'+(p.msg?'<small>“'+esc(p.msg)+'”</small>':'')+'</div></div><b>'+brl(p.valor)+'</b></div>'}).join('')||'<div class="mini">Nenhum presente ainda.</div>')+'</div>';
 }
 
-var FDS=[['Sexta · 11/12',[['09h','Montagem dos fornecedores','Araucária · Dani','#7f8c73'],['14h–21h','Check-in dos hóspedes (a confirmar)','Chalés','#a8744c'],['Noite','Pré-wedding: pizzada','Santa Pizza · até 40 pessoas','#A98F6B'],['00h','Fim da pizzada (a confirmar)','','#6B6153']]],
+var FDS=[['Sexta · 11/12',[['09h','Montagem dos fornecedores','Araucária · Dani','#7f8c73'],['14h–21h','Check-in dos hóspedes (a confirmar)','Chalés','#a8744c'],['19h','Pré-wedding: pizzada (Santa Pizza)','Contrato: 35 convidados e 1 criança','#A98F6B'],['23h','Fim da pizzada','Horário do contrato da Santa Pizza','#6B6153']]],
 ['Sábado · 12/12',[['Manhã','Montagem final','Rose, Deliziare, Mara','#7f8c73'],['13h30','Gerador em stand by (FBS)','Contrato: até 01h30, hora extra R$ 180','#6B6153'],['Tarde','Making of (a confirmar)','Ale Cavaliere','#A98F6B'],['16h30','Recepção dos convidados','','#627a53'],['17h','Cerimônia','Varanda coberta se chover','#627a53'],['18h','Brinde e jantar (a confirmar)','','#a8744c'],['20h','Festa com a banda (a confirmar)','','#A98F6B'],['01h30','Fim da festa','Limite 80 dB após 00h','#6B6153']]],
 ['Domingo · 13/12',[['Manhã','Café e saída dos hóspedes (a confirmar)','','#a8744c'],['até 17h','Desmontagem dos fornecedores','Multa R$ 500/h por atraso','#7f8c73'],['—','Vistoria final com o Araucária','Dani','#7f8c73']]]];
 function vFds(){return '<div class="note">Horários "a confirmar" são sugestões. Os demais vêm do contrato do Araucária e do site.</div><div class="grid c3">'+FDS.map(function(x){return '<div class="card"><h2>'+x[0]+'</h2><div class="tl">'+x[1].map(function(e){return '<div class="ev" style="--c:'+e[3]+'"><div class="h">'+e[0]+'</div><div>'+e[1]+'</div>'+(e[2]?'<div class="o">'+e[2]+'</div>':'')+'</div>'}).join('')+'</div></div>'}).join('')+'</div>'}
