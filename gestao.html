@@ -83,6 +83,11 @@ details.grp>summary::-webkit-details-marker{display:none}details.grp>summary::be
 details.grp .in{padding:0 16px 12px;overflow-x:auto}
 details.n>summary{cursor:pointer;color:var(--g);font-size:.76rem;margin-top:3px}
 #toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:#2d2820;color:#fff;padding:9px 16px;border-radius:999px;font-size:13px;z-index:20;display:none}
+.mc2{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+.mc2 .hj,.mc2 .et{background:var(--card);border-radius:12px;padding:10px 14px;box-shadow:0 1px 3px rgba(0,0,0,.05);min-width:130px}
+.mc2 .hj{background:var(--gd);color:#F5EEDF}.mc2 small{display:block;font-size:.68rem;text-transform:uppercase;letter-spacing:.06em;opacity:.75}
+.mc2 b{display:block;font-weight:500;font-size:1.05rem}.mc2 span{font-size:.76rem;color:var(--mut)}
+.mc2 .et.ok{opacity:.6}.mc2 .et.now{border:2px solid var(--gold)}.mc2 .et.now span{color:var(--gold);font-weight:500}.mc2 .et.next span{color:var(--g)}
 .rlist{padding:6px 0}
 .rw{display:flex;justify-content:space-between;gap:10px;align-items:center;padding:9px 16px;border-bottom:1px solid #eee5d4;cursor:pointer}
 .rw:last-child{border:0}.rw:hover{background:#f7f1e4}.rw.on{background:#efe5d3}
@@ -91,9 +96,9 @@ details.n>summary{cursor:pointer;color:var(--g);font-size:.76rem;margin-top:3px}
 .rw .st{display:flex;gap:8px;align-items:center;flex:none}
 .rw .env{font-size:.72rem;color:var(--g);white-space:nowrap}.rw .env.no{color:var(--mut);opacity:.7}
 .dw-bg{display:none;position:fixed;inset:0;background:rgba(45,40,32,.25);z-index:30}
-.dw{position:fixed;top:0;right:0;bottom:0;width:420px;max-width:100%;background:var(--card);z-index:31;box-shadow:-6px 0 24px rgba(0,0,0,.15);padding:20px 22px 30px;overflow-y:auto}
+.dw{position:fixed;top:0;right:0;bottom:0;width:840px;max-width:100%;color:#000;background:var(--card);z-index:31;box-shadow:-6px 0 24px rgba(0,0,0,.15);padding:20px 22px 30px;overflow-y:auto}
 .dw .dh{display:flex;justify-content:space-between;gap:10px;align-items:flex-start;margin-bottom:12px}
-.dw .dh b{font-family:"Playfair Display",Georgia,serif;font-weight:400;font-size:1.3rem;color:var(--gd);display:block;line-height:1.25}
+.dw .dh b{color:#000;font-family:"Playfair Display",Georgia,serif;font-weight:400;font-size:1.3rem;color:var(--gd);display:block;line-height:1.25}
 .dw .dh small{color:var(--mut);font-size:.8rem}
 .dw .x{border:0;background:var(--soft);border-radius:50%;width:34px;height:34px;font-size:1.3rem;cursor:pointer;flex:none;line-height:1}
 .dw .ac{background:var(--bg);border-radius:10px;padding:8px 12px;font-size:.86rem;margin-bottom:10px}.dw .ac span{color:var(--mut);font-size:.78rem}.dw .ac.solo{color:var(--mut)}
@@ -106,6 +111,7 @@ details.n>summary{cursor:pointer;color:var(--g);font-size:.76rem;margin-top:3px}
 .dw .rsps button.on{background:var(--gd);color:#fff;border-color:var(--gd)}
 .dw input.obs{width:100%;border:1px solid var(--line);border-radius:8px;padding:8px 10px;font:inherit;font-size:.88rem;background:#fff}
 .dw .dnav{display:flex;gap:8px;margin-top:22px;justify-content:space-between}
+.dw .txtbox{color:#000;font-size:.98rem;line-height:1.6}
 .txtbox.ro{user-select:none;-webkit-user-select:none;cursor:default}
 .rule{background:#f6ecd0;border-radius:10px;padding:10px 14px;font-size:.82rem;color:#5c4510;margin-bottom:14px}
 .rule b{font-weight:600}
@@ -338,6 +344,16 @@ function montarMsg(c,rod,ac){
   if(!t)return '';
   return String(t).replace(/\{nome\}/g,c['Primeiro nome']).replace(/\{acompanhantes\}/g,juntar(ac.map(function(x){return x['Primeiro nome']}))).replace(/\{pessoas\}/g,juntar([c['Primeiro nome']].concat(ac.map(function(x){return x['Primeiro nome']}))));
 }
+function tstr(d){return d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2)+'-'+('0'+d.getDate()).slice(-2)}
+function miniCrono(){
+  var cm=D.comunicacao||[],h0=hoje();
+  var f=function(id){return cm.filter(function(r){return String(r['ID'])===id})[0]};
+  var et=[['1ª confirmação',f('C01')],['2ª confirmação',f('C02')],['Guia do casamento',f('C03')]].filter(function(x){return x[1]});
+  return '<div class="mc2"><div class="hj"><small>Hoje</small><b>'+DSEM[h0.getDay()]+', '+fd(tstr(h0))+'</b></div>'+et.map(function(x){
+    var r=x[1],d=r['Data'],a=r['Até (opcional)']||d,dd=dias(d),da=dias(a);
+    var st=r['Status']==='Enviado'?['ok','enviada']:da<0?['ok','encerrada']:dd<=0?['now','em andamento hoje']:['next','em '+dd+(dd===1?' dia':' dias')];
+    return '<div class="et '+st[0]+'"><small>'+esc(x[0])+'</small><b>'+fd(d)+(r['Até (opcional)']?' a '+fd(r['Até (opcional)']):'')+'</b><span>'+st[1]+'</span></div>'}).join('')+'</div>';
+}
 function vRsvp(){
   var C=D.contatos;
   if(!C||!C.length)return '<div class="note">A aba Contatos RSVP ainda não chegou da planilha. Publique a nova versão do Apps Script e clique em Atualizar.</div>';
@@ -357,12 +373,13 @@ function vRsvp(){
     if(F.rs)return x['Resposta']===F.rs;
     return true});
   var h='<div class="rule"><b>Regras de envio:</b> só texto, <b>nunca áudio</b>. A mensagem é padronizada e não pode ser editada: só o nome da pessoa e do acompanhante mudam. Envie para <b>todas as centrais</b>, mesmo quem já confirmou no site. Quem vai junto aparece embaixo da central e não recebe mensagem.</div>';
+  h+=miniCrono();
   h+='<div class="filters"><button class="'+(rod==='2a'?'on':'')+'" data-f="rr|2a">2ª confirmação · 10 a 12/11</button><button class="'+(rod==='guia'?'on':'')+'" data-f="rr|guia">Guia do casamento · 3 e 4/12</button></div>';
   h+='<div class="grid k4"><div class="card kpi"><b>'+env+'/'+cen.length+'</b><span>centrais com mensagem enviada nesta etapa</span></div>'+
      '<div class="card kpi"><b class="green">'+conf+'</b><span>reconfirmaram</span></div>'+
      '<div class="card kpi"><b class="red">'+nao+'</b><span>não vão</span></div>'+
      '<div class="card kpi"><b class="gold">'+semResp+'</b><span>sem resposta registrada</span></div></div>';
-  h+='<div class="filters">'+sel('rp','Todos os perfis',['Hospedados','Dois dias','Geral'],F.rp)+sel('rs','Todas as situações',['Falta enviar','Já enviadas','Sem resposta'].concat(RESPS),F.rs)+'<button id="csv" class="btn">Baixar no modelo da DH2</button></div>';
+  h+='<div class="filters">'+sel('rp','Todos os perfis',['Hospedados','Dois dias','Geral'],F.rp)+sel('rs','Todas as situações',['Falta enviar','Já enviadas','Sem resposta'].concat(RESPS),F.rs)+'</div>';
   h+='<div class="card rlist">'+(L.map(function(c){
     var ac=acompDe(c),enviado=!!c[envCol],on=F.sel===c['ID'];
     return '<div class="rw'+(on?' on':'')+'" data-f="sel|'+esc(c['ID'])+'"><div class="nm"><b>'+esc(c['Nome'])+'</b><small>'+esc(c['Classificação'])+' · convidado por '+esc(c['Convidado por'])+'</small>'+
@@ -372,7 +389,7 @@ function vRsvp(){
   if(cs){
     var ac=acompDe(cs),id=esc(cs['ID']),enviado=!!cs[envCol],msg=montarMsg(cs,rod,ac),tel=String(cs['Telefone (com DDI)']||'').replace(/\D/g,'');
     var idx=MSGS.push({txt:msg,tel:tel})-1,pos=L.indexOf(cs),prox=L[pos+1];
-    h+='<div class="dw-bg" data-f="sel|"></div><aside class="dw"><div class="dh"><div><b>'+esc(cs['Nome'])+'</b><small>'+esc(cs['Classificação'])+' · convidado por '+esc(cs['Convidado por'])+'</small></div><button class="x" data-f="sel|" aria-label="Fechar">×</button></div>'+
+    h+='<div class="dw-bg" data-f="sel|"></div><div class="dw"><div class="dh"><div><b>'+esc(cs['Nome'])+'</b><small>'+esc(cs['Classificação'])+' · convidado por '+esc(cs['Convidado por'])+'</small></div><button class="x" data-f="sel|" aria-label="Fechar">×</button></div>'+
       '<div style="margin-bottom:10px">'+chip(cs['Perfil'],'#7f8c73')+' '+(cs['Confirmou no site']==='Sim'?chip('Confirmou no site','#627a53'):chip('Sem resposta no site','#a8744c'))+(enviado?' '+chip('Enviada '+fd(cs[envCol]),'#3d352c'):'')+'</div>'+
       (ac.length?'<div class="ac">+ '+esc(juntar(ac.map(function(x){return x['Nome']})))+' <span>('+(ac.length>1?'acompanhantes':'acompanhante')+', vão junto)</span></div>':'<div class="ac solo">Sem acompanhante na lista</div>')+
       '<div class="dl">Mensagem</div>'+(msg?'<div class="txtbox ro">'+esc(msg)+'</div>':'<div class="mini red">Mensagem desta etapa não encontrada na aba Comunicação.</div>')+
@@ -381,7 +398,7 @@ function vRsvp(){
       '<label class="envl"><input type="checkbox" class="chk" data-env="'+id+'|'+rod+'"'+(enviado?' checked':'')+'> Mensagem enviada</label>'+
       '<div class="dl">Resposta</div><div class="rsps">'+RESPS.map(function(r){return '<button class="'+(cs['Resposta']===r?'on':'')+'" data-rsp="'+id+'|'+esc(r)+'">'+esc(r)+'</button>'}).join('')+'</div>'+
       '<div class="dl">Observações</div><input class="fq obs" type="text" maxlength="300" data-fld="'+id+'|obs" value="'+esc(cs['Observações'])+'" placeholder="Ex.: pediu para ligar à noite">'+
-      '<div class="dnav">'+(prox?'<button class="btn" data-f="sel|'+esc(prox['ID'])+'">Próxima pessoa ›</button>':'')+'<button class="btn" data-f="sel|">Fechar</button></div></aside>';
+      '<div class="dnav">'+(prox?'<button class="btn" data-f="sel|'+esc(prox['ID'])+'">Próxima pessoa ›</button>':'')+'<button class="btn" data-f="sel|">Fechar</button></div></div>';
   }
   return h;
 }
@@ -407,18 +424,6 @@ function copiarSync(tx){
   var ta=document.createElement('textarea');ta.value=tx;ta.style.position='fixed';ta.style.opacity='0';document.body.appendChild(ta);ta.select();
   var ok=false;try{ok=document.execCommand('copy')}catch(e){}ta.remove();
   if(!ok&&navigator.clipboard)navigator.clipboard.writeText(tx);
-}
-function exportarCsv(){
-  var cab=['Nome do Convidado','Classificação','Convidado por','Total de convidados pagantes (13 anos ou mais)','Crianças que pagam meia (7 a 12 anos)','Crianças não pagantes (0 a 6 anos)','Celular','Confirmados','Observações'];
-  var linhas=[cab];
-  (D.contatos||[]).forEach(function(x){
-    if(x['Papel']==='Central'){
-      var ac=acompDe(x);
-      linhas.push([x['Nome'],x['Classificação'],x['Convidado por'],x['Resposta']==='Confirmou'?numOu(x['Adultos'],1+ac.length):'',x['Resposta']==='Confirmou'?numOu(x['Crianças 7 a 12'],''):'',x['Resposta']==='Confirmou'?numOu(x['Crianças 0 a 6'],''):'',x['Telefone exibido'],x['Resposta']==='Confirmou'?'Sim':(x['Resposta']||''),x['Observações']||'']);
-    }else linhas.push([x['Nome'],x['Classificação'],x['Convidado por'],'','','',x['Vai junto com (acompanhante)'],'','']);
-  });
-  var csv='﻿'+linhas.map(function(r){return r.map(function(v){return '"'+String(v==null?'':v).replace(/"/g,'""')+'"'}).join(';')}).join('\r\n');
-  var a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));a.download='confirmacoes-lais-willian.csv';document.body.appendChild(a);a.click();a.remove();
 }
 function vComRegua(){
   if(!D.comunicacao)return '<div class="card">A aba Comunicação ainda não chegou da planilha. Clique em Atualizar.</div>';
@@ -550,7 +555,6 @@ document.addEventListener('click',function(e){
     toast('Mensagem copiada. No WhatsApp, cole com Ctrl+V e envie. Depois marque "mensagem enviada".');return}
   if(b=e.target.closest('[data-rsp]')){var q=b.dataset.rsp.split('|'),cc=(D.contatos||[]).filter(function(x){return x['ID']===q[0]})[0];
     if(cc)salvarRsvp(q[0],{resposta:cc['Resposta']===q[1]?'':q[1]},rodAtual());return}
-  if(e.target.closest('#csv')){exportarCsv();return}
   if(e.target.closest('#atualizar')||e.target.closest('#atualizar2')){carregar();return}
   if(e.target.closest('#sair')){fetch('/api/gestao-login',{method:'DELETE'}).then(mostrarLogin);return}
 });
