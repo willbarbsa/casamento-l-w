@@ -89,6 +89,8 @@ details.n>summary{cursor:pointer;color:var(--g);font-size:.76rem;margin-top:3px}
 .mc2 b{display:block;font-weight:500;font-size:1.05rem}.mc2 span{font-size:.76rem;color:var(--mut)}
 .mc2 .et.ok{opacity:.6}.mc2 .et.now{border:2px solid var(--gold)}.mc2 .et.now span{color:var(--gold);font-weight:500}.mc2 .et.next span{color:var(--g)}
 .rlist{padding:6px 0}
+.gh{padding:10px 16px 8px;border-bottom:1px solid var(--line);background:var(--soft)}.gh b{display:block;font-weight:600;font-size:.86rem}.gh small{color:var(--mut);font-size:.76rem}
+.gh.hs{background:#f1e4cc;border-left:5px solid var(--gold)}.rw.hosp{border-left:5px solid var(--gold)}
 .rw{display:flex;justify-content:space-between;gap:10px;align-items:center;padding:9px 16px;border-bottom:1px solid #eee5d4;cursor:pointer}
 .rw:last-child{border:0}.rw:hover{background:#f7f1e4}.rw.on{background:#efe5d3}
 .rw .nm b{font-weight:500;font-size:.92rem;display:block}.rw .nm small{display:block;color:var(--mut);font-size:.76rem;line-height:1.35}
@@ -325,11 +327,31 @@ function comEstado(i){
   if(d<0)return'late';if(d0<=7)return'soon';return'';
 }
 /* ---------- Comunicação: régua + reconfirmação de presença ---------- */
+function resumoRsvp(){
+  var C=D.contatos;if(!C||!C.length)return '';
+  var cen=C.filter(function(x){return x['Papel']==='Central'});
+  var pes=function(c){return 1+acompDe(c).length};
+  var ativos=cen.filter(function(c){return c['Resposta']!=='Não vai'});
+  var conf=cen.filter(function(c){return c['Resposta']==='Confirmou'});
+  var soma=function(arr){return arr.reduce(function(s,c){return s+pes(c)},0)};
+  var hosp=ativos.filter(function(c){return c['Perfil']==='Hospedados'});
+  var nh=ativos.filter(function(c){return c['Perfil']!=='Hospedados'});
+  var hot=function(n){return soma(nh.filter(function(c){return c['Hotel']===n}))};
+  var semHot=nh.filter(function(c){return !c['Hotel']}).length;
+  var vSim=soma(nh.filter(function(c){return c['Vans']==='Sim'})),vNao=soma(nh.filter(function(c){return c['Vans']==='Não'})),vSem=nh.filter(function(c){return !c['Vans']}).length;
+  var site=(D.extra&&D.extra.conv&&D.extra.conv.confirmados)||0;
+  return '<div class="grid k4 resumo">'+
+   '<div class="card kpi"><b class="green">'+soma(conf)+'</b><span>pessoas reconfirmadas ('+conf.length+' centrais com acompanhantes)'+(site?'<br>no site: '+site+' confirmados':'')+'</span></div>'+
+   '<div class="card kpi"><b>'+soma(hosp)+'</b><span>pessoas hospedadas com a gente ('+hosp.length+' centrais)</span></div>'+
+   '<div class="card kpi"><b class="gold" style="font-size:1.25rem">Faro '+hot('Faro')+' · Itapetinga '+hot('Itapetinga')+' · Hípica '+hot('Hípica')+'</b><span>pessoas por hotel; outro hotel '+hot('Outro')+', sem hotel '+hot('Não vai se hospedar')+'; '+semHot+' centrais sem resposta</span></div>'+
+   '<div class="card kpi"><b class="gold" style="font-size:1.25rem">Vans: sim '+vSim+' · não '+vNao+'</b><span>pessoas; '+vSem+' centrais sem resposta</span></div></div>';
+}
 function vCom(){
   var rs=F.ct==='rsvp';
-  return '<div class="filters"><button class="'+(!rs?'on':'')+'" data-f="ct|reg">Régua</button><button class="'+(rs?'on':'')+'" data-f="ct|rsvp">Reconfirmação de presença</button></div>'+(rs?vRsvp():vComRegua());
+  return resumoRsvp()+'<div class="filters"><button class="'+(!rs?'on':'')+'" data-f="ct|reg">Régua</button><button class="'+(rs?'on':'')+'" data-f="ct|rsvp">Reconfirmação de presença</button></div>'+(rs?vRsvp():vComRegua());
 }
 function rodAtual(){return F.rr||(dias('2026-12-03')<=0?'guia':'2a')}
+var HOTEIS=['Faro','Itapetinga','Hípica','Outro','Não vai se hospedar'];
 var RESPS=['Confirmou','Não vai','Sem certeza','Caixa postal','Tel. errado','Sem WhatsApp'];
 var MSGS=[];
 function juntar(a){return a.length<2?a.join(''):a.slice(0,-1).join(', ')+' e '+a[a.length-1]}
@@ -338,7 +360,7 @@ function numOu(v,pad){return (v===''||v==null||isNaN(Number(v)))?pad:Number(v)}
 function pessoasDe(c,ac){return numOu(c['Adultos'],1+ac.length)+numOu(c['Crianças 7 a 12'],0)+numOu(c['Crianças 0 a 6'],0)}
 function montarMsg(c,rod,ac){
   var row=(D.comunicacao||[]).filter(function(r){
-    return rod==='2a'?String(r['ID'])==='C02':(/^Guia/.test(String(r['Ação']))&&String(r['Ação']).indexOf('· '+c['Perfil'])>-1)})[0];
+    var pf=c['Perfil']==='Hospedados'?'Hospedados':c['Perfil']==='Dois dias'?'Não hospedados · Sexta e sábado':'Não hospedados · Somente sábado';return rod==='fu'?String(r['ID'])==='C07':rod==='2a'?String(r['Ação']).indexOf('2ª confirmação · '+pf)===0:(/^Guia/.test(String(r['Ação']))&&String(r['Ação']).indexOf('· '+c['Perfil'])>-1)})[0];
   if(!row)return '';
   var t=ac.length?(row['Texto (com acompanhante)']||row['Texto']):row['Texto'];
   if(!t)return '';
@@ -348,18 +370,26 @@ function tstr(d){return d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2)+'-'
 function miniCrono(){
   var cm=D.comunicacao||[],h0=hoje();
   var f=function(id){return cm.filter(function(r){return String(r['ID'])===id})[0]};
-  var et=[['1ª confirmação',f('C01')],['2ª confirmação',f('C02')],['Guia do casamento',f('C03')]].filter(function(x){return x[1]});
+  var et=[['1ª confirmação',f('C01')],['2ª confirmação',f('C02')],['Lembrete (até 36h)',f('C07')],['Guia do casamento',f('C03')]].filter(function(x){return x[1]});
   return '<div class="mc2"><div class="hj"><small>Hoje</small><b>'+DSEM[h0.getDay()]+', '+fd(tstr(h0))+'</b></div>'+et.map(function(x){
     var r=x[1],d=r['Data'],a=r['Até (opcional)']||d,dd=dias(d),da=dias(a);
     var st=r['Status']==='Enviado'?['ok','enviada']:da<0?['ok','encerrada']:dd<=0?['now','em andamento hoje']:['next','em '+dd+(dd===1?' dia':' dias')];
     return '<div class="et '+st[0]+'"><small>'+esc(x[0])+'</small><b>'+fd(d)+(r['Até (opcional)']?' a '+fd(r['Até (opcional)']):'')+'</b><span>'+st[1]+'</span></div>'}).join('')+'</div>';
 }
+function limite36(c){
+  var t=String(c['2ª confirmação enviada em']||'');if(!t)return null;
+  var d=new Date(t.substring(0,10)+'T'+(t.length>=16?t.substring(11,16):'12:00')+':00');
+  return new Date(d.getTime()+36*3600*1000);
+}
+function fdh(d){return ('0'+d.getDate()).slice(-2)+'/'+('0'+(d.getMonth()+1)).slice(-2)+' às '+('0'+d.getHours()).slice(-2)+'h'+('0'+d.getMinutes()).slice(-2)}
 function vRsvp(){
   var C=D.contatos;
   if(!C||!C.length)return '<div class="note">A aba Contatos RSVP ainda não chegou da planilha. Publique a nova versão do Apps Script e clique em Atualizar.</div>';
   var rod=rodAtual();
-  var envCol=rod==='2a'?'2ª confirmação enviada em':'Guia enviado em';
+  var envCol=rod==='2a'?'2ª confirmação enviada em':rod==='fu'?'Lembrete enviado em':'Guia enviado em';
   var cen=C.filter(function(x){return x['Papel']==='Central'});
+  var cen0=cen,agora=new Date();
+  if(rod==='fu')cen=cen.filter(function(x){return x['2ª confirmação enviada em']&&!x['Resposta']});
   MSGS=[];
   var env=cen.filter(function(x){return x[envCol]}).length;
   var conf=cen.filter(function(x){return x['Resposta']==='Confirmou'}).length;
@@ -372,19 +402,29 @@ function vRsvp(){
     if(F.rs==='Sem resposta')return !x['Resposta'];
     if(F.rs)return x['Resposta']===F.rs;
     return true});
-  var h='<div class="rule"><b>Regras de envio:</b> só texto, <b>nunca áudio</b>. A mensagem é padronizada e não pode ser editada: só o nome da pessoa e do acompanhante mudam. Envie para <b>todas as centrais</b>, mesmo quem já confirmou no site. Quem vai junto aparece embaixo da central e não recebe mensagem.</div>';
+  var h='<div class="rule"><b>Regras de envio:</b> só texto, <b>nunca áudio</b>. A mensagem é padronizada e não pode ser editada: só o nome da pessoa e do acompanhante mudam. Envie para <b>todas as centrais</b>, mesmo quem já confirmou no site. <b>São 3 mensagens na 2ª confirmação:</b> <b>hospedados</b> (sem hotel e vans), <b>não hospedados · sexta e sábado</b> e <b>não hospedados · somente sábado</b> (os dois com hotel e vans). O lembrete é um só, para todos. Quem vai junto aparece embaixo da central e não recebe mensagem.</div>';
   h+=miniCrono();
-  h+='<div class="filters"><button class="'+(rod==='2a'?'on':'')+'" data-f="rr|2a">2ª confirmação · 10 a 12/11</button><button class="'+(rod==='guia'?'on':'')+'" data-f="rr|guia">Guia do casamento · 3 e 4/12</button></div>';
+  h+='<div class="filters"><button class="'+(rod==='2a'?'on':'')+'" data-f="rr|2a">2ª confirmação · 10 a 12/11</button><button class="'+(rod==='guia'?'on':'')+'" data-f="rr|guia">Guia do casamento · 3 e 4/12</button><button class="'+(rod==='fu'?'on':'')+'" data-f="rr|fu">Lembrete · até 36h depois</button></div>';
+  if(rod==='fu'){
+    var venc=cen.filter(function(x){var l=limite36(x);return !x[envCol]&&l&&agora>l}).length;
+    var jaResp=cen0.filter(function(x){return x['Lembrete enviado em']&&x['Resposta']}).length;
+    h+='<div class="rule" style="margin-top:0">Lembrete curto só para quem <b>não respondeu</b>, em até <b>36 horas</b> depois da 1ª mensagem. Aparecem aqui as centrais que já receberam a 2ª confirmação e ainda estão sem resposta.</div>';
+    h+='<div class="grid k4"><div class="card kpi"><b>'+cen.length+'</b><span>sem resposta, a lembrar</span></div><div class="card kpi"><b class="green">'+env+'</b><span>lembretes enviados</span></div><div class="card kpi"><b class="'+(venc?'red':'green')+'">'+venc+'</b><span>com as 36 horas vencidas</span></div><div class="card kpi"><b class="gold">'+jaResp+'</b><span>responderam depois do lembrete</span></div></div>';
+  }else{
   h+='<div class="grid k4"><div class="card kpi"><b>'+env+'/'+cen.length+'</b><span>centrais com mensagem enviada nesta etapa</span></div>'+
      '<div class="card kpi"><b class="green">'+conf+'</b><span>reconfirmaram</span></div>'+
      '<div class="card kpi"><b class="red">'+nao+'</b><span>não vão</span></div>'+
      '<div class="card kpi"><b class="gold">'+semResp+'</b><span>sem resposta registrada</span></div></div>';
+  }
   h+='<div class="filters">'+sel('rp','Todos os perfis',['Hospedados','Dois dias','Geral'],F.rp)+sel('rs','Todas as situações',['Falta enviar','Já enviadas','Sem resposta'].concat(RESPS),F.rs)+'</div>';
-  h+='<div class="card rlist">'+(L.map(function(c){
-    var ac=acompDe(c),enviado=!!c[envCol],on=F.sel===c['ID'];
-    return '<div class="rw'+(on?' on':'')+'" data-f="sel|'+esc(c['ID'])+'"><div class="nm"><b>'+esc(c['Nome'])+'</b><small>'+esc(c['Classificação'])+' · convidado por '+esc(c['Convidado por'])+'</small>'+
-      (ac.length?'<small class="acn">+ '+esc(juntar(ac.map(function(x){return x['Nome']})))+' <i>('+(ac.length>1?'acompanhantes':'acompanhante')+')</i></small>':'')+'</div>'+
-      '<div class="st">'+(c['Resposta']?chip(c['Resposta'],c['Resposta']==='Confirmou'?'#627a53':c['Resposta']==='Não vai'?'#b0533f':'#a8744c'):'')+(enviado?'<span class="env" title="Mensagem enviada">✓ enviada</span>':'<span class="env no">a enviar</span>')+'</div></div>'}).join('')||'<div class="mini" style="padding:12px">Nenhum contato com esse filtro.</div>')+'</div>';
+  var linha=function(c){
+    var ac=acompDe(c),enviado=!!c[envCol],on=F.sel===c['ID'],hosp=c['Perfil']==='Hospedados';
+    return '<div class="rw'+(on?' on':'')+(hosp?' hosp':'')+'" data-f="sel|'+esc(c['ID'])+'"><div class="nm"><b>'+esc(c['Nome'])+'</b><small>'+esc(c['Classificação'])+' · convidado por '+esc(c['Convidado por'])+'</small>'+
+      (ac.length?'<small class="acn">+ '+esc(juntar(ac.map(function(x){return x['Nome']})))+' <i>('+(ac.length>1?'acompanhantes':'acompanhante')+')</i></small>':'')+(rod==='fu'&&limite36(c)?'<small class="'+((!enviado&&agora>limite36(c))?'red':'')+'">Lembrar até '+fdh(limite36(c))+((!enviado&&agora>limite36(c))?' (vencido)':'')+'</small>':'')+'</div>'+
+      '<div class="st">'+(hosp?chip('Hospedado','#a8744c'):chip(c['Perfil']==='Dois dias'?'Sexta e sábado':'Só sábado','#7f8c73'))+(c['Resposta']?chip(c['Resposta'],c['Resposta']==='Confirmou'?'#627a53':c['Resposta']==='Não vai'?'#b0533f':'#a8744c'):'')+(enviado?'<span class="env" title="Mensagem enviada">✓ enviada</span>':'<span class="env no">a enviar</span>')+'</div></div>'};
+  var gH=L.filter(function(x){return x['Perfil']==='Hospedados'}),gO=L.filter(function(x){return x['Perfil']!=='Hospedados'});
+  var grupo=function(tit,sub,arr,cls){return arr.length?'<div class="gh '+cls+'"><b>'+tit+' ('+arr.length+')</b><small>'+sub+'</small></div>'+arr.map(linha).join(''):''};
+  h+='<div class="card rlist">'+(grupo('Hospedados com a gente','Mensagem SEM hotel e vans, com o check-in e a programação de sexta e sábado',gH,'hs')+grupo('Demais convidados','Sexta e sábado (perfil Dois dias) ou somente sábado (perfil Geral): mensagem COM hotel e vans',gO,'ot')||'<div class="mini" style="padding:12px">Nenhum contato com esse filtro.</div>')+'</div>';
   var cs=F.sel&&cen.filter(function(x){return x['ID']===F.sel})[0];
   if(cs){
     var ac=acompDe(cs),id=esc(cs['ID']),enviado=!!cs[envCol],msg=montarMsg(cs,rod,ac),tel=String(cs['Telefone (com DDI)']||'').replace(/\D/g,'');
@@ -392,11 +432,12 @@ function vRsvp(){
     h+='<div class="dw-bg" data-f="sel|"></div><div class="dw"><div class="dh"><div><b>'+esc(cs['Nome'])+'</b><small>'+esc(cs['Classificação'])+' · convidado por '+esc(cs['Convidado por'])+'</small></div><button class="x" data-f="sel|" aria-label="Fechar">×</button></div>'+
       '<div style="margin-bottom:10px">'+chip(cs['Perfil'],'#7f8c73')+' '+(cs['Confirmou no site']==='Sim'?chip('Confirmou no site','#627a53'):chip('Sem resposta no site','#a8744c'))+(enviado?' '+chip('Enviada '+fd(cs[envCol]),'#3d352c'):'')+'</div>'+
       (ac.length?'<div class="ac">+ '+esc(juntar(ac.map(function(x){return x['Nome']})))+' <span>('+(ac.length>1?'acompanhantes':'acompanhante')+', vão junto)</span></div>':'<div class="ac solo">Sem acompanhante na lista</div>')+
-      '<div class="dl">Mensagem</div>'+(msg?'<div class="txtbox ro">'+esc(msg)+'</div>':'<div class="mini red">Mensagem desta etapa não encontrada na aba Comunicação.</div>')+
+      '<div class="dl">Mensagem'+(rod==='2a'?(cs['Perfil']==='Hospedados'?' · para HOSPEDADOS':cs['Perfil']==='Dois dias'?' · para NÃO hospedados · SEXTA E SÁBADO':' · para NÃO hospedados · SOMENTE SÁBADO'):rod==='fu'?' · lembrete (igual para todos)':'')+'</div>'+(msg?'<div class="txtbox ro">'+esc(msg)+'</div>':'<div class="mini red">Mensagem desta etapa não encontrada na aba Comunicação.</div>')+
       '<button class="btn wa big" data-wa2="'+idx+'"'+(msg&&tel?'':' disabled')+'>Copiar mensagem e abrir WhatsApp</button>'+
       '<div class="mini" style="margin:6px 0 14px">Telefone: '+esc(cs['Telefone exibido'])+'. No WhatsApp, cole com Ctrl+V e envie só texto.</div>'+
       '<label class="envl"><input type="checkbox" class="chk" data-env="'+id+'|'+rod+'"'+(enviado?' checked':'')+'> Mensagem enviada</label>'+
       '<div class="dl">Resposta</div><div class="rsps">'+RESPS.map(function(r){return '<button class="'+(cs['Resposta']===r?'on':'')+'" data-rsp="'+id+'|'+esc(r)+'">'+esc(r)+'</button>'}).join('')+'</div>'+
+      (cs['Perfil']!=='Hospedados'?'<div class="dl">Hotel onde vai ficar</div><div class="rsps">'+HOTEIS.map(function(r){return '<button class="'+(cs['Hotel']===r?'on':'')+'" data-hot="'+id+'|'+esc(r)+'">'+esc(r)+'</button>'}).join('')+'</div><div class="dl">Vai usar as vans?</div><div class="rsps">'+['Sim','Não'].map(function(r){return '<button class="'+(cs['Vans']===r?'on':'')+'" data-van="'+id+'|'+esc(r)+'">'+esc(r)+'</button>'}).join('')+'</div>':'')+
       '<div class="dl">Observações</div><input class="fq obs" type="text" maxlength="300" data-fld="'+id+'|obs" value="'+esc(cs['Observações'])+'" placeholder="Ex.: pediu para ligar à noite">'+
       '<div class="dnav">'+(prox?'<button class="btn" data-f="sel|'+esc(prox['ID'])+'">Próxima pessoa ›</button>':'')+'<button class="btn" data-f="sel|">Fechar</button></div></div>';
   }
@@ -404,10 +445,10 @@ function vRsvp(){
 }
 async function salvarRsvp(id,patch,rod){
   var c=(D.contatos||[]).filter(function(x){return x['ID']===id})[0];if(!c)return;
-  var map={resposta:'Resposta',adultos:'Adultos',c712:'Crianças 7 a 12',c06:'Crianças 0 a 6',obs:'Observações'};
+  var map={resposta:'Resposta',hotel:'Hotel',vans:'Vans',adultos:'Adultos',c712:'Crianças 7 a 12',c06:'Crianças 0 a 6',obs:'Observações'};
   var antes={};
   Object.keys(patch).forEach(function(k){if(map[k]){antes[map[k]]=c[map[k]];c[map[k]]=patch[k]}});
-  var col=rod==='2a'?'2ª confirmação enviada em':'Guia enviado em';
+  var col=rod==='2a'?'2ª confirmação enviada em':rod==='fu'?'Lembrete enviado em':'Guia enviado em';
   if(patch.enviado){antes[col]=c[col];c[col]=patch.desfazer?'':new Date().toISOString().substring(0,10)}
   render();
   var body=Object.assign({id:id},patch);if(patch.enviado)body.enviado=rod;
@@ -555,6 +596,10 @@ document.addEventListener('click',function(e){
     toast('Mensagem copiada. No WhatsApp, cole com Ctrl+V e envie. Depois marque "mensagem enviada".');return}
   if(b=e.target.closest('[data-rsp]')){var q=b.dataset.rsp.split('|'),cc=(D.contatos||[]).filter(function(x){return x['ID']===q[0]})[0];
     if(cc)salvarRsvp(q[0],{resposta:cc['Resposta']===q[1]?'':q[1]},rodAtual());return}
+  if(b=e.target.closest('[data-hot]')){var h2=b.dataset.hot.split('|'),c2=(D.contatos||[]).filter(function(x){return x['ID']===h2[0]})[0];
+    if(c2)salvarRsvp(h2[0],{hotel:c2['Hotel']===h2[1]?'':h2[1]},rodAtual());return}
+  if(b=e.target.closest('[data-van]')){var v2=b.dataset.van.split('|'),c3=(D.contatos||[]).filter(function(x){return x['ID']===v2[0]})[0];
+    if(c3)salvarRsvp(v2[0],{vans:c3['Vans']===v2[1]?'':v2[1]},rodAtual());return}
   if(e.target.closest('#atualizar')||e.target.closest('#atualizar2')){carregar();return}
   if(e.target.closest('#sair')){fetch('/api/gestao-login',{method:'DELETE'}).then(mostrarLogin);return}
 });
