@@ -397,6 +397,8 @@ function vRsvp(){
   var semResp=cen.filter(function(x){return !x['Resposta']}).length;
   var L=cen.filter(function(x){
     if(F.rp&&x['Perfil']!==F.rp)return false;
+    if(F.rh){if(F.rh==='Sem resposta'){if(x['Perfil']==='Hospedados'||x['Hotel'])return false}else if(x['Hotel']!==F.rh)return false}
+    if(F.rv){if(F.rv==='Sem resposta'){if(x['Perfil']==='Hospedados'||x['Vans'])return false}else if(x['Vans']!==F.rv)return false}
     if(F.rs==='Falta enviar')return !x[envCol];
     if(F.rs==='Já enviadas')return !!x[envCol];
     if(F.rs==='Sem resposta')return !x['Resposta'];
@@ -416,12 +418,14 @@ function vRsvp(){
      '<div class="card kpi"><b class="red">'+nao+'</b><span>não vão</span></div>'+
      '<div class="card kpi"><b class="gold">'+semResp+'</b><span>sem resposta registrada</span></div></div>';
   }
-  h+='<div class="filters">'+sel('rp','Todos os perfis',['Hospedados','Dois dias','Geral'],F.rp)+sel('rs','Todas as situações',['Falta enviar','Já enviadas','Sem resposta'].concat(RESPS),F.rs)+'</div>';
+  h+='<div class="filters">'+sel('rp','Todos os perfis',['Hospedados','Dois dias','Geral'],F.rp)+sel('rs','Todas as situações',['Falta enviar','Já enviadas','Sem resposta'].concat(RESPS),F.rs)+sel('rh','Todos os hotéis',HOTEIS.concat(['Sem resposta']),F.rh)+sel('rv','Vans: todas',['Sim','Não','Sem resposta'],F.rv)+((F.rp||F.rs||F.rh||F.rv)?'<button class="btn" data-lf="1">Limpar filtros</button>':'')+'</div>';
+  var nPes=L.reduce(function(t,c){return t+1+acompDe(c).length},0);
+  if(F.rp||F.rs||F.rh||F.rv)h+='<div class="mini" style="margin:-4px 0 8px"><b>'+L.length+'</b> '+(L.length===1?'central':'centrais')+' com esse filtro · <b>'+nPes+'</b> '+(nPes===1?'pessoa':'pessoas')+' contando acompanhantes</div>';
   var linha=function(c){
     var ac=acompDe(c),enviado=!!c[envCol],on=F.sel===c['ID'],hosp=c['Perfil']==='Hospedados';
     return '<div class="rw'+(on?' on':'')+(hosp?' hosp':'')+'" data-f="sel|'+esc(c['ID'])+'"><div class="nm"><b>'+esc(c['Nome'])+'</b><small>'+esc(c['Classificação'])+' · convidado por '+esc(c['Convidado por'])+'</small>'+
       (ac.length?'<small class="acn">+ '+esc(juntar(ac.map(function(x){return x['Nome']})))+' <i>('+(ac.length>1?'acompanhantes':'acompanhante')+')</i></small>':'')+(rod==='fu'&&limite36(c)?'<small class="'+((!enviado&&agora>limite36(c))?'red':'')+'">Lembrar até '+fdh(limite36(c))+((!enviado&&agora>limite36(c))?' (vencido)':'')+'</small>':'')+'</div>'+
-      '<div class="st">'+(hosp?chip('Hospedado','#a8744c'):chip(c['Perfil']==='Dois dias'?'Sexta e sábado':'Só sábado','#7f8c73'))+(c['Resposta']?chip(c['Resposta'],c['Resposta']==='Confirmou'?'#627a53':c['Resposta']==='Não vai'?'#b0533f':'#a8744c'):'')+(enviado?'<span class="env" title="Mensagem enviada">✓ enviada</span>':'<span class="env no">a enviar</span>')+'</div></div>'};
+      '<div class="st">'+(hosp?chip('Hospedado','#a8744c'):chip(c['Perfil']==='Dois dias'?'Sexta e sábado':'Só sábado','#7f8c73'))+(c['Hotel']?chip(c['Hotel']==='Não vai se hospedar'?'Sem hotel':'Hotel '+c['Hotel'],'#5f7f8c'):'')+(c['Vans']?chip(c['Vans']==='Sim'?'Van: sim':'Van: não','#6b6f8c'):'')+(c['Resposta']?chip(c['Resposta'],c['Resposta']==='Confirmou'?'#627a53':c['Resposta']==='Não vai'?'#b0533f':'#a8744c'):'')+(enviado?'<span class="env" title="Mensagem enviada">✓ enviada</span>':'<span class="env no">a enviar</span>')+'</div></div>'};
   var gH=L.filter(function(x){return x['Perfil']==='Hospedados'}),gO=L.filter(function(x){return x['Perfil']!=='Hospedados'});
   var grupo=function(tit,sub,arr,cls){return arr.length?'<div class="gh '+cls+'"><b>'+tit+' ('+arr.length+')</b><small>'+sub+'</small></div>'+arr.map(linha).join(''):''};
   h+='<div class="card rlist">'+(grupo('Hospedados com a gente','Mensagem SEM hotel e vans, com o check-in e a programação de sexta e sábado',gH,'hs')+grupo('Demais convidados','Sexta e sábado (perfil Dois dias) ou somente sábado (perfil Geral): mensagem COM hotel e vans',gO,'ot')||'<div class="mini" style="padding:12px">Nenhum contato com esse filtro.</div>')+'</div>';
@@ -587,6 +591,7 @@ document.addEventListener('click',function(e){
   var b;
   if(b=e.target.closest('[data-t]')){TAB=b.dataset.t;render();scrollTo(0,0);return}
   if(b=e.target.closest('[data-ver]')){VER=b.dataset.ver;TAB='home';render();return}
+  if(e.target.closest('[data-lf]')){F.rp=F.rs=F.rh=F.rv='';render();return}
   if(b=e.target.closest('[data-f]')){var p=b.dataset.f.split('|');F[p[0]]=p[1];render();return}
   if(b=e.target.closest('[data-copy]')){var tx=COMTXT[+b.dataset.copy]||'';
     (navigator.clipboard?navigator.clipboard.writeText(tx):Promise.reject()).catch(function(){var ta=document.createElement('textarea');ta.value=tx;document.body.appendChild(ta);ta.select();document.execCommand('copy');ta.remove()}).then(function(){var o=b.textContent;b.textContent='Copiado ✓';setTimeout(function(){b.textContent=o},1500)});return}
@@ -607,7 +612,7 @@ document.addEventListener('change',function(e){
   if(e.target.dataset&&e.target.dataset.env){var pe=e.target.dataset.env.split('|');salvarRsvp(pe[0],{enviado:pe[1],desfazer:!e.target.checked},pe[1]);return}
   if(e.target.dataset&&e.target.dataset.fld){var pf=e.target.dataset.fld.split('|'),pt={};pt[pf[1]]=e.target.value;salvarRsvp(pf[0],pt,rodAtual());return}
   if(e.target.classList&&e.target.classList.contains('chk')){marcar(e.target);return}
-  var m={fc:'cat',ft:'tipo',fps:'ps',fsit:'fsit',cq:'cq',cp:'cp',cs:'cs',rp:'rp',rs:'rs'};
+  var m={fc:'cat',ft:'tipo',fps:'ps',fsit:'fsit',cq:'cq',cp:'cp',cs:'cs',rp:'rp',rs:'rs',rh:'rh',rv:'rv'};
   if(m[e.target.id]){F[m[e.target.id]]=e.target.value;render()}
 });
 document.addEventListener('keydown',function(e){if(e.key==='Escape'&&F.sel){F.sel='';render()}});
